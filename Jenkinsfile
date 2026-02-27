@@ -8,15 +8,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout GIT') {
-            steps {
-                echo 'Récupération du code source...'
-                git branch: 'master',
-                    url: 'https://github.com/youssefbouaouina/devopsNIDS.git',
-                    credentialsId: 'github-credentials'
-            }
-        }
-
         stage('Clean') {
             steps {
                 sh 'mvn clean'
@@ -48,12 +39,11 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
                     sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
         }
-
     }
 
     post {
