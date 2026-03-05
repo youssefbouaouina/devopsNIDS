@@ -8,6 +8,13 @@ pipeline {
 
     stages {
 
+        stage('GIT') {
+            steps {
+                echo "Getting Project from Git"
+                git branch: 'master', url: 'https://github.com/youssefbouaouina/devopsNIDS.git'
+            }
+        }
+
         stage('Clean') {
             steps {
                 sh 'mvn clean'
@@ -23,6 +30,15 @@ pipeline {
         stage('Package') {
             steps {
                 sh 'mvn package -DskipTests'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                sh '''mvn sonar:sonar \
+                  -Dsonar.host.url=http://192.168.198.131:9000 \
+                  -Dsonar.login=admin \
+                  -Dsonar.password=Pass123'''
             }
         }
 
