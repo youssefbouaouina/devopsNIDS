@@ -11,7 +11,7 @@ pipeline {
         stage('GIT') {
             steps {
                 echo "Getting Project from Git"
-                git branch: 'master', url: 'https://github.com/youssefbouaouina/devopsNIDS.git'
+                git branch: 'origin', url: 'https://github.com/youssefbouaouina/devopsNIDS.git'
             }
         }
 
