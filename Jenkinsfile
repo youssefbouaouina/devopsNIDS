@@ -8,13 +8,6 @@ pipeline {
 
     stages {
 
-        stage('GIT') {
-            steps {
-                echo "Getting Project from Git"
-                git branch: 'origin', url: 'https://github.com/youssefbouaouina/devopsNIDS.git'
-            }
-        }
-
         stage('Clean') {
             steps {
                 sh 'mvn clean'
