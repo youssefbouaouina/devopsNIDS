@@ -53,6 +53,35 @@ pipeline {
                 }
             }
         }
+
+        stage('Kubernetes Deploy') {
+            steps {
+                sh '''
+                    kubectl apply -f /home/vagrant/k8s-student/namespace.yaml
+                    kubectl apply -f /home/vagrant/k8s-student/pv-sql.yaml
+                    kubectl apply -f /home/vagrant/k8s-student/pvc-sql.yaml
+                    kubectl apply -f /home/vagrant/k8s-student/deploy-sql.yaml
+                    kubectl apply -f /home/vagrant/k8s-student/service-sql.yaml
+                    kubectl apply -f /home/vagrant/k8s-student/configmap-spring.yaml
+                    kubectl apply -f /home/vagrant/k8s-student/secret-spring.yaml
+                    kubectl apply -f /home/vagrant/k8s-student/deploy-spring.yaml
+                    kubectl apply -f /home/vagrant/k8s-student/service-spring.yaml
+                '''
+            }
+        }
+
+        stage('Kubernetes Verify') {
+            steps {
+                sh '''
+                    echo "=== Pods ==="
+                    kubectl get pods -n devops
+                    echo "=== Services ==="
+                    kubectl get svc -n devops
+                    echo "=== Deployments ==="
+                    kubectl get deployments -n devops
+                '''
+            }
+        }
     }
 
     post {
