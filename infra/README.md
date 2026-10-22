@@ -117,7 +117,7 @@ The suggested plugins include everything the Jenkinsfile needs (Pipeline, Git, C
 2. **Account settings > Personal access tokens > Generate new token**, permissions **Read & Write**.
 3. Copy the token.
 
-> The pipeline pushes to `youssefbouaouina/student-management`. If your Docker Hub username is different,
+> The pipeline pushes to `youssefbouaouina82/student-management`. If your Docker Hub username is different,
 > change `IMAGE_NAME` at the top of the `Jenkinsfile`.
 
 ### 4.4 GitHub: access token (the repo is private)
@@ -173,7 +173,7 @@ What each stage does:
 |--------------------|------------------------------------------------------------------|
 | Clean / Compile / Package | `mvn clean`, `mvn compile`, `mvn package -DskipTests` → `target/*.jar` |
 | SonarQube Analysis | Sends the code to SonarQube; results at http://192.168.56.10:9000 |
-| Build Docker Image | Builds `youssefbouaouina/student-management:<build#>` and `:latest` |
+| Build Docker Image | Builds `youssefbouaouina82/student-management:<build#>` and `:latest` |
 | Push Docker Image  | Pushes both tags to Docker Hub                                    |
 | Kubernetes Deploy  | Applies `k8s/`: namespace `devops`, MySQL secret, MySQL, Spring app; waits for rollout |
 | Kubernetes Verify  | Prints pods, services and deployments                            |

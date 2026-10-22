@@ -6,7 +6,8 @@ pipeline {
     //   sonar-token            Secret text             SonarQube user token
     //   mysql-root-password    Secret text             MySQL root password used in Kubernetes
     environment {
-        IMAGE_NAME = 'youssefbouaouina/student-management'
+        // Must start with the Docker Hub username stored in `dockerhub-credentials`
+        IMAGE_NAME = 'youssefbouaouina82/student-management'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         SONAR_HOST_URL = 'http://localhost:9000'
     }
