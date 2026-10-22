@@ -72,7 +72,7 @@ pipeline {
                     '''
                 }
                 sh "sed 's|__IMAGE__|${IMAGE_NAME}:${IMAGE_TAG}|' k8s/spring-app.yaml | kubectl apply -f -"
-                sh 'kubectl -n devops rollout status deployment/spring-app --timeout=300s'
+                sh 'kubectl -n devops rollout status deployment/spring-app --timeout=600s'
             }
         }
 

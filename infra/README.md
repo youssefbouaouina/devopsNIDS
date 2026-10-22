@@ -175,7 +175,7 @@ What each stage does:
 | SonarQube Analysis | Sends the code to SonarQube; results at http://192.168.56.10:9000 |
 | Build Docker Image | Builds `youssefbouaouina82/student-management:<build#>` and `:latest` |
 | Push Docker Image  | Pushes both tags to Docker Hub                                    |
-| Kubernetes Deploy  | Applies `k8s/`: namespace `devops`, MySQL secret, MySQL, Spring app; waits for rollout |
+| Kubernetes Deploy  | Applies `k8s/`: namespace `devops`, MySQL secret, MySQL, Spring app; waits up to 10 min for rollout |
 | Kubernetes Verify  | Prints pods, services and deployments                            |
 
 The first build is slow because Maven downloads every dependency. Later builds are faster.
