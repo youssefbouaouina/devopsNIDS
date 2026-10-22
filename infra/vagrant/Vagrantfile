@@ -1,0 +1,27 @@
+# DevOps lab VM: Jenkins, Maven, SonarQube, Docker, Minikube, Prometheus, Grafana.
+# Usage (PowerShell, from this folder):  vagrant up   |   vagrant ssh   |   vagrant halt
+# Size can be tuned without editing:     $env:VM_MEMORY=8192; $env:VM_CPUS=4; vagrant up
+
+VM_IP     = ENV.fetch("VM_IP", "192.168.56.10")
+VM_MEMORY = ENV.fetch("VM_MEMORY", "10240").to_i
+VM_CPUS   = ENV.fetch("VM_CPUS", "6").to_i
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-24.04"
+  config.vm.hostname = "devops"
+  config.vm.network "private_network", ip: VM_IP
+
+  # Repo root (two levels up) is mounted at /vagrant so provisioning can read infra/ and k8s/.
+  config.vm.synced_folder "../..", "/vagrant"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.name   = "devops-lab"
+    vb.memory = VM_MEMORY
+    vb.cpus   = VM_CPUS
+  end
+
+  # One-time install of the toolchain.
+  config.vm.provision "bootstrap", type: "shell", path: "provision/bootstrap.sh"
+  # Runs on every `vagrant up`: starts Minikube, SonarQube, monitoring, and wires Jenkins to the cluster.
+  config.vm.provision "services", type: "shell", path: "provision/services.sh", run: "always"
+end

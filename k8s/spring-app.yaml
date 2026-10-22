@@ -1,0 +1,65 @@
+# Spring Boot backend. __IMAGE__ is replaced by the Jenkins pipeline with the image it just pushed.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spring-config
+  namespace: devops
+data:
+  SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/studentdb?createDatabaseIfNotExist=true
+  SPRING_DATASOURCE_USERNAME: root
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-app
+  namespace: devops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spring-app
+  template:
+    metadata:
+      labels:
+        app: spring-app
+    spec:
+      containers:
+        - name: spring-app
+          image: __IMAGE__
+          ports:
+            - containerPort: 8089
+          envFrom:
+            - configMapRef:
+                name: spring-config
+          env:
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: password
+          readinessProbe:
+            httpGet:
+              path: /student/actuator/health
+              port: 8089
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /student/actuator/health
+              port: 8089
+            initialDelaySeconds: 90
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-app
+  namespace: devops
+spec:
+  type: NodePort
+  selector:
+    app: spring-app
+  ports:
+    - port: 8089
+      targetPort: 8089
+      nodePort: 30089

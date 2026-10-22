@@ -1,9 +1,14 @@
 pipeline {
     agent any
 
+    // Jenkins credentials required (Manage Jenkins > Credentials):
+    //   dockerhub-credentials  Username with password  Docker Hub login
+    //   sonar-token            Secret text             SonarQube user token
+    //   mysql-root-password    Secret text             MySQL root password used in Kubernetes
     environment {
         IMAGE_NAME = 'youssefbouaouina/student-management'
-        IMAGE_TAG = '1.0'
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        SONAR_HOST_URL = 'http://localhost:9000'
     }
 
     stages {
@@ -28,16 +33,15 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                sh '''mvn sonar:sonar \
-                  -Dsonar.host.url=http://192.168.198.131:9000 \
-                  -Dsonar.login=admin \
-                  -Dsonar.password=Pass123'''
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    sh 'mvn sonar:sonar -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest ."
             }
         }
 
@@ -50,23 +54,24 @@ pipeline {
                 )]) {
                     sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
                     sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                    sh "docker push ${IMAGE_NAME}:latest"
                 }
             }
         }
 
         stage('Kubernetes Deploy') {
             steps {
-                sh '''
-                    kubectl apply -f /home/vagrant/k8s-student/namespace.yaml
-                    kubectl apply -f /home/vagrant/k8s-student/pv-sql.yaml
-                    kubectl apply -f /home/vagrant/k8s-student/pvc-sql.yaml
-                    kubectl apply -f /home/vagrant/k8s-student/deploy-sql.yaml
-                    kubectl apply -f /home/vagrant/k8s-student/service-sql.yaml
-                    kubectl apply -f /home/vagrant/k8s-student/configmap-spring.yaml
-                    kubectl apply -f /home/vagrant/k8s-student/secret-spring.yaml
-                    kubectl apply -f /home/vagrant/k8s-student/deploy-spring.yaml
-                    kubectl apply -f /home/vagrant/k8s-student/service-spring.yaml
-                '''
+                withCredentials([string(credentialsId: 'mysql-root-password', variable: 'MYSQL_ROOT_PASSWORD')]) {
+                    sh '''
+                        kubectl apply -f k8s/namespace.yaml
+                        kubectl -n devops create secret generic mysql-secret \
+                          --from-literal=password="$MYSQL_ROOT_PASSWORD" \
+                          --dry-run=client -o yaml | kubectl apply -f -
+                        kubectl apply -f k8s/mysql.yaml
+                    '''
+                }
+                sh "sed 's|__IMAGE__|${IMAGE_NAME}:${IMAGE_TAG}|' k8s/spring-app.yaml | kubectl apply -f -"
+                sh 'kubectl -n devops rollout status deployment/spring-app --timeout=300s'
             }
         }
 
