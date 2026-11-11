@@ -2,7 +2,7 @@
 
 **Module:** Labs: Cybersecurity and Coding (5NIDS6), Esprit
 **Supervisor:** Nawel Hammami
-**Team:** Youssef Bouaouina, *(partner name)*
+**Team:** Youssef Bouaouina, Ayoub Braham
 **Validation:** Thursday 12/11/2026
 **Repository:** https://github.com/youssefbouaouina/devopsNIDS (branch `devsecops/lab1-pre-commit`)
 
