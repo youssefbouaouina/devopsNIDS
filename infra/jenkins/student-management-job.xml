@@ -29,9 +29,9 @@
   <properties>
     <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
       <triggers>
-        <!-- GitHub webhooks cannot reach the VM's private IP, so poll every minute -->
+        <!-- GitHub webhooks cannot reach the VM's private IP, so poll every 2 minutes -->
         <hudson.triggers.SCMTrigger>
-          <spec>* * * * *</spec>
+          <spec>H/2 * * * *</spec>
           <ignorePostCommitHooks>false</ignorePostCommitHooks>
         </hudson.triggers.SCMTrigger>
       </triggers>
