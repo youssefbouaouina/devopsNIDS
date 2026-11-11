@@ -1,0 +1,1744 @@
+Started by an SCM change
+Obtained Jenkinsfile from git https://github.com/youssefbouaouina/devopsNIDS.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on  in /var/lib/jenkins/workspace/student-management
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+No credentials specified
+ > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/student-management/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/youssefbouaouina/devopsNIDS.git # timeout=10
+Fetching upstream changes from https://github.com/youssefbouaouina/devopsNIDS.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.43.0'
+ > git fetch --tags --force --progress -- https://github.com/youssefbouaouina/devopsNIDS.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/devsecops/lab1-pre-commit^{commit} # timeout=10
+Checking out Revision b127d11d8ade3e1a33c77ac6b6e1413b4e8f5297 (refs/remotes/origin/devsecops/lab1-pre-commit)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f b127d11d8ade3e1a33c77ac6b6e1413b4e8f5297 # timeout=10
+Commit message: "Use a small pre-commit image for the secrets scan (VM disk space)"
+ > git rev-list --no-walk 5c0497635eb4200cd9e4ea4ec1e4ada4946b4c56 # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Secrets Scan (pre-commit))
+[Pipeline] sh
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Checking staged files for sensitive content..............................Passed
+Checking staged files for sensitive file types...........................Passed
+Checking local hooks against latest release..............................Passed
+- hook id: hooks_version_check
+- duration: 1.81s
+
+All HMRC hooks are up to date
+All HMRC hooks are up to date
+All HMRC hooks are up to date
+All HMRC hooks are up to date
+All HMRC hooks are up to date
+All HMRC hooks are up to date
+
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Clean)
+[Pipeline] sh
++ mvn clean
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< tn.esprit:student-management >--------------------
+[INFO] Building student-management 0.0.1-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:3.4.1:clean (default-clean) @ student-management ---
+[INFO] Deleting /var/lib/jenkins/workspace/student-management/target
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  0.808 s
+[INFO] Finished at: 2026-11-11T19:02:25Z
+[INFO] ------------------------------------------------------------------------
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Compile)
+[Pipeline] sh
++ mvn compile
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< tn.esprit:student-management >--------------------
+[INFO] Building student-management 0.0.1-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ student-management ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.14.1:compile (default-compile) @ student-management ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 20 source files with javac [debug parameters release 17] to target/classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.115 s
+[INFO] Finished at: 2026-11-11T19:02:34Z
+[INFO] ------------------------------------------------------------------------
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Package)
+[Pipeline] sh
++ mvn package -DskipTests
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< tn.esprit:student-management >--------------------
+[INFO] Building student-management 0.0.1-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ student-management ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.14.1:compile (default-compile) @ student-management ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:testResources (default-testResources) @ student-management ---
+[INFO] skip non existing resourceDirectory /var/lib/jenkins/workspace/student-management/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.14.1:testCompile (default-testCompile) @ student-management ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 1 source file with javac [debug parameters release 17] to target/test-classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- maven-surefire-plugin:3.5.6:test (default-test) @ student-management ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:3.4.2:jar (default-jar) @ student-management ---
+[INFO] Building jar: /var/lib/jenkins/workspace/student-management/target/student-management-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- spring-boot-maven-plugin:3.5.15:repackage (repackage) @ student-management ---
+[INFO] Replacing main artifact /var/lib/jenkins/workspace/student-management/target/student-management-0.0.1-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /var/lib/jenkins/workspace/student-management/target/student-management-0.0.1-SNAPSHOT.jar.original
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  5.798 s
+[INFO] Finished at: 2026-11-11T19:02:43Z
+[INFO] ------------------------------------------------------------------------
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (SCA + IaC Scan (Trivy))
+[Pipeline] sh
+2026-11-11T19:02:46Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-11-11T19:02:46Z	INFO	Number of language-specific files	num=1
+2026-11-11T19:02:46Z	INFO	[jar] Detecting vulnerabilities...
+2026-11-11T19:02:48Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-11-11T19:02:48Z	INFO	Number of language-specific files	num=1
+2026-11-11T19:02:48Z	INFO	[jar] Detecting vulnerabilities...
+2026-11-11T19:02:48Z	INFO	Some vulnerabilities have been ignored/suppressed. Use the "--show-suppressed" flag to display them.
+2026-11-11T19:02:50Z	INFO	[misconfig] Misconfiguration scanning is enabled
+2026-11-11T19:02:53Z	INFO	Detected config files	num=6
+2026-11-11T19:02:54Z	INFO	[misconfig] Misconfiguration scanning is enabled
+2026-11-11T19:02:57Z	INFO	Detected config files	num=6
+
+Report Summary
+
+┌───────────────────────────────────────┬──────┬─────────────────┐
+│                Target                 │ Type │ Vulnerabilities │
+├───────────────────────────────────────┼──────┼─────────────────┤
+│ student-management-0.0.1-SNAPSHOT.jar │ jar  │        0        │
+└───────────────────────────────────────┴──────┴─────────────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+
+Report Summary
+
+┌───────────────────────────────┬────────────┬───────────────────┐
+│            Target             │    Type    │ Misconfigurations │
+├───────────────────────────────┼────────────┼───────────────────┤
+│ Dockerfile                    │ dockerfile │         1         │
+├───────────────────────────────┼────────────┼───────────────────┤
+│ k8s/mysql.yaml                │ kubernetes │        16         │
+├───────────────────────────────┼────────────┼───────────────────┤
+│ k8s/namespace.yaml            │ kubernetes │         0         │
+├───────────────────────────────┼────────────┼───────────────────┤
+│ k8s/spring-app.yaml           │ kubernetes │         2         │
+├───────────────────────────────┼────────────┼───────────────────┤
+│ security/gauntlt/Dockerfile   │ dockerfile │         2         │
+├───────────────────────────────┼────────────┼───────────────────┤
+│ security/precommit/Dockerfile │ dockerfile │         2         │
+└───────────────────────────────┴────────────┴───────────────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+
+Dockerfile (dockerfile)
+=======================
+Tests: 27 (SUCCESSES: 26, FAILURES: 1)
+Failures: 1 (UNKNOWN: 0, LOW: 1, MEDIUM: 0, HIGH: 0, CRITICAL: 0)
+
+AVD-DS-0026 (LOW): Add HEALTHCHECK instruction in your Dockerfile
+════════════════════════════════════════
+You should add HEALTHCHECK instruction in your docker container images to perform the health check on running containers.
+
+See https://avd.aquasec.com/misconfig/ds026
+────────────────────────────────────────
+
+
+
+k8s/mysql.yaml (kubernetes)
+===========================
+Tests: 114 (SUCCESSES: 98, FAILURES: 16)
+Failures: 16 (UNKNOWN: 0, LOW: 10, MEDIUM: 3, HIGH: 3, CRITICAL: 0)
+
+AVD-KSV-0001 (MEDIUM): Container 'mysql' of Deployment 'mysql' should set 'securityContext.allowPrivilegeEscalation' to false
+════════════════════════════════════════
+A program inside the container can elevate its own privileges and run as root, which might give the program control over the container and node.
+
+See https://avd.aquasec.com/misconfig/ksv001
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0003 (LOW): Container 'mysql' of Deployment 'mysql' should add 'ALL' to 'securityContext.capabilities.drop'
+════════════════════════════════════════
+The container should drop all default capabilities and add only those that are needed for its execution.
+
+See https://avd.aquasec.com/misconfig/ksv003
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0004 (LOW): Container 'mysql' of 'deployment' 'mysql' in 'devops' namespace should set securityContext.capabilities.drop
+════════════════════════════════════════
+Security best practices require containers to run with minimal required capabilities.
+
+See https://avd.aquasec.com/misconfig/ksv004
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0011 (LOW): Container 'mysql' of Deployment 'mysql' should set 'resources.limits.cpu'
+════════════════════════════════════════
+Enforcing CPU limits prevents DoS via resource exhaustion.
+
+See https://avd.aquasec.com/misconfig/ksv011
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0012 (MEDIUM): Container 'mysql' of Deployment 'mysql' should set 'securityContext.runAsNonRoot' to true
+════════════════════════════════════════
+Force the running image to run as a non-root user to ensure least privileges.
+
+See https://avd.aquasec.com/misconfig/ksv012
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0014 (HIGH): Container 'mysql' of Deployment 'mysql' should set 'securityContext.readOnlyRootFilesystem' to true
+════════════════════════════════════════
+An immutable root file system prevents applications from writing to their local disk. This can limit intrusions, as attackers will not be able to tamper with the file system or write foreign executables to disk.
+
+See https://avd.aquasec.com/misconfig/ksv014
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0015 (LOW): Container 'mysql' of Deployment 'mysql' should set 'resources.requests.cpu'
+════════════════════════════════════════
+When containers have resource requests specified, the scheduler can make better decisions about which nodes to place pods on, and how to deal with resource contention.
+
+See https://avd.aquasec.com/misconfig/ksv015
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0016 (LOW): Container 'mysql' of Deployment 'mysql' should set 'resources.requests.memory'
+════════════════════════════════════════
+When containers have memory requests specified, the scheduler can make better decisions about which nodes to place pods on, and how to deal with resource contention.
+
+See https://avd.aquasec.com/misconfig/ksv016
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0018 (LOW): Container 'mysql' of Deployment 'mysql' should set 'resources.limits.memory'
+════════════════════════════════════════
+Enforcing memory limits prevents DoS via resource exhaustion.
+
+See https://avd.aquasec.com/misconfig/ksv018
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0020 (LOW): Container 'mysql' of Deployment 'mysql' should set 'securityContext.runAsUser' > 10000
+════════════════════════════════════════
+Force the container to run with user ID > 10000 to avoid conflicts with the host’s user table.
+
+See https://avd.aquasec.com/misconfig/ksv020
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0021 (LOW): Container 'mysql' of Deployment 'mysql' should set 'securityContext.runAsGroup' > 10000
+════════════════════════════════════════
+Force the container to run with group ID > 10000 to avoid conflicts with the host’s user table.
+
+See https://avd.aquasec.com/misconfig/ksv021
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0030 (LOW): Either Pod or Container should set 'securityContext.seccompProfile.type' to 'RuntimeDefault'
+════════════════════════════════════════
+According to pod security standard 'Seccomp', the RuntimeDefault seccomp profile must be required, or allow specific additional profiles.
+
+See https://avd.aquasec.com/misconfig/ksv030
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0104 (MEDIUM): container "mysql" of deployment "mysql" in "devops" namespace should specify a seccomp profile
+════════════════════════════════════════
+A program inside the container can bypass Seccomp protection policies.
+
+See https://avd.aquasec.com/misconfig/ksv104
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0106 (LOW): container should drop all
+════════════════════════════════════════
+Containers must drop ALL capabilities, and are only permitted to add back the NET_BIND_SERVICE capability.
+
+See https://avd.aquasec.com/misconfig/ksv106
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0118 (HIGH): container mysql in devops namespace is using the default security context
+════════════════════════════════════════
+Security context controls the allocation of security parameters for the pod/container/volume, ensuring the appropriate level of protection. Relying on default security context may expose vulnerabilities to potential attacks that rely on privileged access.
+
+See https://avd.aquasec.com/misconfig/ksv118
+────────────────────────────────────────
+ k8s/mysql.yaml:33-52
+────────────────────────────────────────
+  33 ┌         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 │                 secretKeyRef:
+  41 └                   name: mysql-secret
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-0118 (HIGH): deployment mysql in devops namespace is using the default security context, which allows root privileges
+════════════════════════════════════════
+Security context controls the allocation of security parameters for the pod/container/volume, ensuring the appropriate level of protection. Relying on default security context may expose vulnerabilities to potential attacks that rely on privileged access.
+
+See https://avd.aquasec.com/misconfig/ksv118
+────────────────────────────────────────
+ k8s/mysql.yaml:32-56
+────────────────────────────────────────
+  32 ┌       containers:
+  33 │         - name: mysql
+  34 │           image: mysql:8.0
+  35 │           ports:
+  36 │             - containerPort: 3306
+  37 │           env:
+  38 │             - name: MYSQL_ROOT_PASSWORD
+  39 │               valueFrom:
+  40 └                 secretKeyRef:
+  ..   
+────────────────────────────────────────
+
+
+
+k8s/spring-app.yaml (kubernetes)
+================================
+Tests: 100 (SUCCESSES: 98, FAILURES: 2)
+Failures: 2 (UNKNOWN: 0, LOW: 0, MEDIUM: 2, HIGH: 0, CRITICAL: 0)
+
+AVD-KSV-0013 (MEDIUM): Container 'spring-app' of Deployment 'spring-app' should specify an image tag
+════════════════════════════════════════
+It is best to avoid using the ':latest' image tag when deploying containers in production. Doing so makes it hard to track which version of the image is running, and hard to roll back the version.
+
+See https://avd.aquasec.com/misconfig/ksv013
+────────────────────────────────────────
+ k8s/spring-app.yaml:37-77
+────────────────────────────────────────
+  37 ┌         - name: spring-app
+  38 │           image: __IMAGE__
+  39 │           ports:
+  40 │             - containerPort: 8089
+  41 │           # Hardening from the Trivy IaC scan (KSV-0001/0003/0014/0011/0015/0016/0018)
+  42 │           securityContext:
+  43 │             allowPrivilegeEscalation: false
+  44 │             readOnlyRootFilesystem: true
+  45 └             capabilities:
+  ..   
+────────────────────────────────────────
+
+
+AVD-KSV-01010 (MEDIUM): ConfigMap 'spring-config' in 'devops' namespace stores sensitive contents in key(s) or value(s) '{"SPRING_DATASOURCE_USERNAME"}'
+════════════════════════════════════════
+Storing sensitive content such as usernames and email addresses in configMaps is unsafe
+
+See https://avd.aquasec.com/misconfig/avd-ksv-01010
+────────────────────────────────────────
+
+
+
+security/gauntlt/Dockerfile (dockerfile)
+========================================
+Tests: 27 (SUCCESSES: 25, FAILURES: 2)
+Failures: 2 (UNKNOWN: 0, LOW: 1, MEDIUM: 0, HIGH: 1, CRITICAL: 0)
+
+AVD-DS-0002 (HIGH): Specify at least 1 USER command in Dockerfile with non-root user as argument
+════════════════════════════════════════
+Running containers with 'root' user can lead to a container escape situation. It is a best practice to run containers as non-root users, which can be done by adding a 'USER' statement to the Dockerfile.
+
+See https://avd.aquasec.com/misconfig/ds002
+────────────────────────────────────────
+
+
+AVD-DS-0026 (LOW): Add HEALTHCHECK instruction in your Dockerfile
+════════════════════════════════════════
+You should add HEALTHCHECK instruction in your docker container images to perform the health check on running containers.
+
+See https://avd.aquasec.com/misconfig/ds026
+────────────────────────────────────────
+
+
+
+security/precommit/Dockerfile (dockerfile)
+==========================================
+Tests: 27 (SUCCESSES: 25, FAILURES: 2)
+Failures: 2 (UNKNOWN: 0, LOW: 1, MEDIUM: 0, HIGH: 1, CRITICAL: 0)
+
+AVD-DS-0002 (HIGH): Specify at least 1 USER command in Dockerfile with non-root user as argument
+════════════════════════════════════════
+Running containers with 'root' user can lead to a container escape situation. It is a best practice to run containers as non-root users, which can be done by adding a 'USER' statement to the Dockerfile.
+
+See https://avd.aquasec.com/misconfig/ds002
+────────────────────────────────────────
+
+
+AVD-DS-0026 (LOW): Add HEALTHCHECK instruction in your Dockerfile
+════════════════════════════════════════
+You should add HEALTHCHECK instruction in your docker container images to perform the health check on running containers.
+
+See https://avd.aquasec.com/misconfig/ds026
+────────────────────────────────────────
+
+
+[Pipeline] catchError
+[Pipeline] {
+[Pipeline] sh
++ bash security/trivy.sh rootfs --scanners vuln --severity CRITICAL --exit-code 1 --quiet target/
+
+Report Summary
+
+┌───────────────────────────────────────┬──────┬─────────────────┐
+│                Target                 │ Type │ Vulnerabilities │
+├───────────────────────────────────────┼──────┼─────────────────┤
+│ student-management-0.0.1-SNAPSHOT.jar │ jar  │        0        │
+└───────────────────────────────────────┴──────┴─────────────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+[Pipeline] }
+[Pipeline] // catchError
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (JS Dependency Scan (Retire.js))
+[Pipeline] catchError
+[Pipeline] {
+[Pipeline] sh
++ bash security/retire.sh
+JavaScript files found in the application: 7
+retire.js v5.7.0
+Loading from cache: https://raw.githubusercontent.com/RetireJS/retire.js/master/repository/jsrepository-v5.json
+Reading /tmp/.retire-cache/1794423788658.json ...
+/src/target/js-scan/swagger-ui-5.34.1/META-INF/resources/webjars/swagger-ui/5.34.1/swagger-ui-bundle.js
+ ↳ DOMPurify 3.4.17
+/src/target/js-scan/swagger-ui-5.34.1/META-INF/resources/webjars/swagger-ui/5.34.1/swagger-ui-bundle.js
+ ↳ react-dom 18.3.1
+/src/target/js-scan/swagger-ui-5.34.1/META-INF/resources/webjars/swagger-ui/5.34.1/swagger-ui-bundle.js
+ ↳ highlightjs 10.7.3
+/src/target/js-scan/swagger-ui-5.34.1/META-INF/resources/webjars/swagger-ui/5.34.1/swagger-ui-es-bundle.js
+ ↳ DOMPurify 3.4.17
+/src/target/js-scan/swagger-ui-5.34.1/META-INF/resources/webjars/swagger-ui/5.34.1/swagger-ui-es-bundle.js
+ ↳ react-dom 18.3.1
+/src/target/js-scan/swagger-ui-5.34.1/META-INF/resources/webjars/swagger-ui/5.34.1/swagger-ui-es-bundle.js
+ ↳ highlightjs 10.7.3
+Retire.js findings by severity: none
+[Pipeline] }
+[Pipeline] // catchError
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (SonarQube Analysis (SAST))
+[Pipeline] withCredentials
+Masking supported pattern matches of $SONAR_TOKEN
+[Pipeline] {
+[Pipeline] sh
++ mvn sonar:sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.token=**** -Dsonar.qualitygate.wait=true -Dsonar.qualitygate.timeout=300
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< tn.esprit:student-management >--------------------
+[INFO] Building student-management 0.0.1-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- sonar-maven-plugin:5.1.0.4751:sonar (default-cli) @ student-management ---
+[INFO] Java 21.0.12.1 Ubuntu (64-bit)
+[INFO] Linux 6.8.0-86-generic (amd64)
+[INFO] User cache: /var/lib/jenkins/.sonar/cache
+[INFO] Communicating with SonarQube Community Build 26.10.0.133078
+[INFO] JRE provisioning: os[linux], arch[x86_64]
+[INFO] Starting SonarScanner Engine...
+[INFO] Java 21.0.12.1 Eclipse Adoptium (64-bit)
+[INFO] Load global settings
+[INFO] Load global settings (done) | time=466ms
+[INFO] Server id: 147B411E-AaGF3kaUJ8jeSbTvXbZe
+[INFO] Loading required plugins
+[INFO] Load plugins index
+[INFO] Load plugins index (done) | time=71ms
+[INFO] Load/download plugins
+[INFO] Load/download plugins (done) | time=42ms
+[INFO] Load project settings for component key: 'tn.esprit:student-management'
+[INFO] Load project settings for component key: 'tn.esprit:student-management' (done) | time=73ms
+[INFO] Process project properties
+[INFO] Process project properties (done) | time=57ms
+[INFO] Project key: tn.esprit:student-management
+[INFO] Base dir: /var/lib/jenkins/workspace/student-management
+[INFO] Working dir: /var/lib/jenkins/workspace/student-management/target/sonar
+[INFO] Load quality profiles
+[INFO] Load quality profiles (done) | time=750ms
+[INFO] Auto-configuring with CI 'Jenkins'
+[INFO] Load active rules
+[INFO] Load active rules (done) | time=939ms
+[INFO] Load analysis cache
+[INFO] Load analysis cache (947 bytes) | time=67ms
+[INFO] Preprocessing files...
+[INFO] 2 languages detected in 22 preprocessed files (done) | time=241ms
+[INFO] 0 files ignored because of scm ignore settings
+[INFO] Loading plugins for detected languages
+[INFO] Load/download plugins
+[INFO] Load/download plugins (done) | time=44ms
+[INFO] Load project repositories
+[INFO] Load project repositories (done) | time=338ms
+[INFO] Indexing files...
+[INFO] Project configuration:
+[INFO] 22 files indexed (done) | time=28ms
+[INFO] Quality profile for java: Sonar way core
+[INFO] Quality profile for xml: Sonar way core
+[INFO] ------------- Run sensors on module student-management
+[INFO] Load metrics repository
+[INFO] Load metrics repository (done) | time=67ms
+[INFO] Sensor IaC YAML File Type Classification Sensor [iac]
+[INFO] Sensor IaC YAML File Type Classification Sensor [iac] (done) | time=14ms
+[INFO] Sensor JavaSensor [java]
+[INFO] Configured Java source version (sonar.java.source): 17, preview features enabled (sonar.java.enablePreview): false
+[INFO] Server-side caching is enabled. The Java analyzer will not try to leverage data from a previous analysis.
+[INFO] Using ECJ batch to parse 20 Main java source files with batch size 130 KB.
+[INFO] Starting batch processing.
+[INFO] The Java analyzer cannot skip unchanged files in this context. A full analysis is performed for all files.
+[INFO] 100% analyzed
+[INFO] Batch processing: Done.
+[INFO] Did not optimize analysis for any files, performed a full analysis for all 20 files.
+[INFO] Using ECJ batch to parse 1 Test java source files with batch size 130 KB.
+[INFO] Starting batch processing.
+[INFO] 100% analyzed
+[INFO] Batch processing: Done.
+[INFO] Did not optimize analysis for any files, performed a full analysis for all 1 files.
+[INFO] No "Generated" source files to scan.
+[INFO] Sensor JavaSensor [java] (done) | time=4275ms
+[INFO] Sensor JaCoCo XML Report Importer [jacoco]
+[INFO] 'sonar.coverage.jacoco.xmlReportPaths' is not defined. Using default locations: target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml,build/reports/jacoco/test/jacocoTestReport.xml
+[INFO] No report imported, no coverage information will be imported by JaCoCo XML Report Importer
+[INFO] Sensor JaCoCo XML Report Importer [jacoco] (done) | time=16ms
+[INFO] Sensor IaC hadolint report Sensor [iac]
+[INFO] Sensor IaC hadolint report Sensor [iac] (done) | time=4ms
+[INFO] Sensor Java Config Sensor [iac]
+[INFO] There are no files to be analyzed for the Java language
+[INFO] Sensor Java Config Sensor [iac] (done) | time=3ms
+[INFO] Sensor IaC Docker Sensor [iac]
+[INFO] There are no files to be analyzed for the Docker language
+[INFO] Sensor IaC Docker Sensor [iac] (done) | time=12ms
+[INFO] Sensor SurefireSensor [java]
+[INFO] parsing [/var/lib/jenkins/workspace/student-management/target/surefire-reports]
+[INFO] Sensor SurefireSensor [java] (done) | time=6ms
+[INFO] Sensor XML Sensor [xml]
+[INFO] 1 source file to be analyzed
+[INFO] 1/1 source file has been analyzed
+[INFO] Sensor XML Sensor [xml] (done) | time=426ms
+[INFO] Sensor TextAndSecretsSensor [text]
+[INFO] Available processors: 6
+[INFO] Using 6 threads for analysis.
+[INFO] Start fetching files for the text and secrets analysis
+[INFO] Using Git CLI to retrieve dirty files
+[INFO] Retrieving language associated files and files included via "sonar.text.inclusions" that are tracked by git
+[INFO] Starting the text and secrets analysis
+[INFO] 22 source files to be analyzed for the text and secrets analysis
+[INFO] 22/22 source files have been analyzed for the text and secrets analysis
+[INFO] Sensor TextAndSecretsSensor [text] (done) | time=1644ms
+[INFO] ------------- Run sensors on project
+[INFO] Sensor JaCoCo Aggregate XML Report Importer [jacoco]
+[INFO] Sensor JaCoCo Aggregate XML Report Importer [jacoco] (done) | time=0ms
+[INFO] Sensor IaC Project Sensor [iac]
+[INFO] Sensor IaC Project Sensor [iac] (done) | time=2ms
+[INFO] Sensor JavaProjectSensor [java]
+[INFO] Sensor JavaProjectSensor [java] (done) | time=7ms
+[INFO] Sensor Zero Coverage Sensor
+[INFO] Sensor Zero Coverage Sensor (done) | time=22ms
+[INFO] Sensor Java CPD Block Indexer
+[INFO] Sensor Java CPD Block Indexer (done) | time=84ms
+[INFO] ------------- Gather SCA dependencies on project
+[INFO] Dependency analysis skipped
+[INFO] CPD Executor 9 files had no CPD blocks
+[INFO] CPD Executor Calculating CPD for 11 files
+[INFO] CPD Executor CPD calculation finished (done) | time=55ms
+[INFO] SCM revision ID 'b127d11d8ade3e1a33c77ac6b6e1413b4e8f5297'
+[INFO] Analysis report generated in 243ms, dir size=196.0 kB
+[INFO] Analysis report compressed in 238ms, zip size=58.4 kB
+[INFO] Analysis report uploaded in 685ms
+[INFO] ------------- Check Quality Gate status
+[INFO] Waiting for the analysis report to be processed (max 300s)
+[INFO] QUALITY GATE STATUS: PASSED - View details on http://localhost:9000/dashboard?id=tn.esprit%3Astudent-management
+[INFO] Analysis total time: 38.011 s
+[INFO] SonarScanner Engine completed successfully
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  43.263 s
+[INFO] Finished at: 2026-11-11T19:03:58Z
+[INFO] ------------------------------------------------------------------------
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build Docker Image)
+[Pipeline] sh
++ docker build -t youssefbouaouina82/student-management:15 -t youssefbouaouina82/student-management:latest .
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  69.58MB
+Step 1/7 : FROM eclipse-temurin:17-jre
+ ---> 2a996a534890
+Step 2/7 : RUN groupadd --system --gid 10001 app  && useradd --system --uid 10001 --gid app --no-create-home --shell /usr/sbin/nologin app
+ ---> Running in 6273b16cda9a
+useradd warning: app's uid 10001 is greater than SYS_UID_MAX 999
+ ---> Removed intermediate container 6273b16cda9a
+ ---> 0e0fe889e9da
+Step 3/7 : WORKDIR /app
+ ---> Running in 3bf180e71e85
+ ---> Removed intermediate container 3bf180e71e85
+ ---> b54e238d9fa4
+Step 4/7 : COPY --chown=app:app target/*.jar app.jar
+ ---> cd3f7b8b06e6
+Step 5/7 : USER 10001
+ ---> Running in b39ce8d8122a
+ ---> Removed intermediate container b39ce8d8122a
+ ---> 739b1f33991c
+Step 6/7 : EXPOSE 8089
+ ---> Running in 4ae85baa2db5
+ ---> Removed intermediate container 4ae85baa2db5
+ ---> a14fb0396532
+Step 7/7 : ENTRYPOINT ["java", "-jar", "app.jar"]
+ ---> Running in 2906fec23c46
+ ---> Removed intermediate container 2906fec23c46
+ ---> fefda5db8c24
+Successfully built fefda5db8c24
+Successfully tagged youssefbouaouina82/student-management:15
+Successfully tagged youssefbouaouina82/student-management:latest
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Container Scan (Trivy))
+[Pipeline] sh
+2026-11-11T19:04:29Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-11-11T19:04:58Z	INFO	Detected OS	family="ubuntu" version="26.04"
+2026-11-11T19:04:58Z	WARN	This OS version is not on the EOL list	family="ubuntu" version="26.04"
+2026-11-11T19:04:58Z	INFO	[ubuntu] Detecting vulnerabilities...	os_version="26.04" pkg_num=140
+2026-11-11T19:04:58Z	INFO	Number of language-specific files	num=2
+2026-11-11T19:04:58Z	INFO	[gobinary] Detecting vulnerabilities...
+2026-11-11T19:04:58Z	INFO	[jar] Detecting vulnerabilities...
+2026-11-11T19:04:58Z	WARN	Using severities from other vendors for some vulnerabilities. Read https://trivy.dev/v0.65/docs/scanner/vulnerability#severity-selection for details.
+2026-11-11T19:05:02Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-11-11T19:05:26Z	INFO	Detected OS	family="ubuntu" version="26.04"
+2026-11-11T19:05:26Z	WARN	This OS version is not on the EOL list	family="ubuntu" version="26.04"
+2026-11-11T19:05:26Z	INFO	[ubuntu] Detecting vulnerabilities...	os_version="26.04" pkg_num=140
+2026-11-11T19:05:26Z	INFO	Number of language-specific files	num=2
+2026-11-11T19:05:26Z	INFO	[gobinary] Detecting vulnerabilities...
+2026-11-11T19:05:26Z	INFO	[jar] Detecting vulnerabilities...
+2026-11-11T19:05:26Z	WARN	Using severities from other vendors for some vulnerabilities. Read https://trivy.dev/v0.65/docs/scanner/vulnerability#severity-selection for details.
+2026-11-11T19:05:26Z	INFO	Some vulnerabilities have been ignored/suppressed. Use the "--show-suppressed" flag to display them.
+
+Report Summary
+
+┌─────────────────────────────────────────────────────────┬──────────┬─────────────────┐
+│                         Target                          │   Type   │ Vulnerabilities │
+├─────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+│ youssefbouaouina82/student-management:15 (ubuntu 26.04) │  ubuntu  │       62        │
+├─────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+│ app/app.jar                                             │   jar    │        0        │
+├─────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+│ usr/bin/pebble                                          │ gobinary │        1        │
+└─────────────────────────────────────────────────────────┴──────────┴─────────────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+
+youssefbouaouina82/student-management:15 (ubuntu 26.04)
+=======================================================
+Total: 62 (UNKNOWN: 0, LOW: 4, MEDIUM: 56, HIGH: 2, CRITICAL: 0)
+
+┌─────────────────────┬─────────────────┬──────────┬──────────┬────────────────────────────────────┬───────────────────┬──────────────────────────────────────────────────────────────┐
+│       Library       │  Vulnerability  │ Severity │  Status  │         Installed Version          │   Fixed Version   │                            Title                             │
+├─────────────────────┼─────────────────┼──────────┼──────────┼────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ apt                 │ CVE-2026-109518 │ HIGH     │ fixed    │ 3.2.0                              │ 3.2.1ubuntu0.1    │ apt: apt: Remote code execution via hard link reuse during   │
+│                     │                 │          │          │                                    │                   │ package download...                                          │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-109518                  │
+├─────────────────────┼─────────────────┼──────────┼──────────┼────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ bsdutils            │ CVE-2026-78408  │ MEDIUM   │ affected │ 1:2.41.3-3ubuntu2.2                │                   │ util-linux: util-linux: nsenter --join-cgroup leaks root     │
+│                     │                 │          │          │                                    │                   │ cgroup migration authority                                   │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-78408                   │
+├─────────────────────┼─────────────────┤          │          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ dash                │ CVE-2026-102473 │          │          │ 0.5.12-12ubuntu3                   │                   │ dash: dash: Super-polynomial backtracking in pmatch when     │
+│                     │                 │          │          │                                    │                   │ libc fnmatch is disabled                                     │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-102473                  │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-102474 │          │          │                                    │                   │ dash: dash: Heap out-of-bounds write in conv_escape via      │
+│                     │                 │          │          │                                    │                   │ undersized Unicode escape reservation...                     │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-102474                  │
+├─────────────────────┼─────────────────┼──────────┼──────────┼────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ libapt-pkg7.0       │ CVE-2026-109518 │ HIGH     │ fixed    │ 3.2.0                              │ 3.2.1ubuntu0.1    │ apt: apt: Remote code execution via hard link reuse during   │
+│                     │                 │          │          │                                    │                   │ package download...                                          │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-109518                  │
+├─────────────────────┼─────────────────┼──────────┼──────────┼────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ libblkid1           │ CVE-2026-78408  │ MEDIUM   │ affected │ 2.41.3-3ubuntu2.2                  │                   │ util-linux: util-linux: nsenter --join-cgroup leaks root     │
+│                     │                 │          │          │                                    │                   │ cgroup migration authority                                   │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-78408                   │
+├─────────────────────┼─────────────────┤          │          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ libexpat1           │ CVE-2025-66382  │          │          │ 2.7.4-1ubuntu0.2                   │                   │ libexpat: libexpat: Denial of service via crafted file       │
+│                     │                 │          │          │                                    │                   │ processing                                                   │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2025-66382                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-102633 │          │          │                                    │                   │ expat: expat: Denial of Service via integer overflow in      │
+│                     │                 │          │          │                                    │                   │ expat_realloc                                                │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-102633                  │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-93990  │          │          │                                    │                   │ expat: Expat: XML Injection via Malformed UTF-16 Input       │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-93990                   │
+├─────────────────────┼─────────────────┤          │          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ libgnutls30t64      │ CVE-2026-67693  │          │          │ 3.8.12-2ubuntu1.1                  │                   │ gnutls: gnutls: Information disclosure via contradictory Key │
+│                     │                 │          │          │                                    │                   │ Usage and Extended Key Usage...                              │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-67693                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-88647  │          │          │                                    │                   │ gnutls: gnutls: Information disclosure via hostname          │
+│                     │                 │          │          │                                    │                   │ verification bypass                                          │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-88647                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-88648  │          │          │                                    │                   │ gnutls: gnutls: Cross-domain certificate restriction bypass  │
+│                     │                 │          │          │                                    │                   │ via incomplete X.509 validation                              │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-88648                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-95184  │          │          │                                    │                   │ gnutls: gnutls: legitimate user certificates incorrectly     │
+│                     │                 │          │          │                                    │                   │ rejected causing denial of service                           │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-95184                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-95210  │          │          │                                    │                   │ gnutls: gnutls: certificates with invalid extensions         │
+│                     │                 │          │          │                                    │                   │ incorrectly accepted                                         │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-95210                   │
+├─────────────────────┼─────────────────┤          │          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ libmount1           │ CVE-2026-78408  │          │          │ 2.41.3-3ubuntu2.2                  │                   │ util-linux: util-linux: nsenter --join-cgroup leaks root     │
+│                     │                 │          │          │                                    │                   │ cgroup migration authority                                   │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-78408                   │
+├─────────────────────┼─────────────────┤          │          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ libp11-kit0         │ CVE-2026-13757  │          │          │ 0.26.2-2                           │                   │ p11-kit: Stack exhaustion via unbounded recursion in RPC     │
+│                     │                 │          │          │                                    │                   │ attribute parsing                                            │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-13757                   │
+├─────────────────────┼─────────────────┤          ├──────────┼────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ libpcre2-8-0        │ CVE-2026-103111 │          │ fixed    │ 10.46-1build1                      │ 10.46-1ubuntu0.1  │ pcre2: pcre2: Out-of-bounds write via crafted regular        │
+│                     │                 │          │          │                                    │                   │ expression                                                   │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-103111                  │
+│                     ├─────────────────┤          │          │                                    │                   ├──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-86145  │          │          │                                    │                   │ pcre2: PCRE2: Out-of-bounds write allows arbitrary code      │
+│                     │                 │          │          │                                    │                   │ execution via crafted regular expressions...                 │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-86145                   │
+│                     ├─────────────────┤          │          │                                    │                   ├──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-89156  │          │          │                                    │                   │ PCRE2: PCRE2: Out-of-bounds read via invalid UTF data during │
+│                     │                 │          │          │                                    │                   │ JIT fallback                                                 │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-89156                   │
+│                     ├─────────────────┤          │          │                                    │                   ├──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-89157  │          │          │                                    │                   │ pcre2: PCRE2: Out-of-bounds write via large pattern input    │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-89157                   │
+│                     ├─────────────────┤          │          │                                    │                   ├──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-89158  │          │          │                                    │                   │ PCRE2: PCRE2: Out-of-bounds write via integer overflow on    │
+│                     │                 │          │          │                                    │                   │ 32-bit platforms                                             │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-89158                   │
+│                     ├─────────────────┤          │          │                                    │                   ├──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-89160  │          │          │                                    │                   │ pcre2: PCRE2: Denial of Service via out-of-bounds read       │
+│                     │                 │          │          │                                    │                   │ during invalid UTF matching...                               │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-89160                   │
+│                     ├─────────────────┤          │          │                                    │                   ├──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-89161  │          │          │                                    │                   │ pcre2: PCRE2: Memory corruption vulnerability in             │
+│                     │                 │          │          │                                    │                   │ pcre2_jit_match                                              │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-89161                   │
+│                     ├─────────────────┤          │          │                                    │                   ├──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-89162  │          │          │                                    │                   │ pcre2: PCRE2: Information disclosure via                     │
+│                     │                 │          │          │                                    │                   │ pcre2_serialize_encode                                       │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-89162                   │
+├─────────────────────┼─────────────────┤          ├──────────┼────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ libsasl2-2          │ CVE-2026-107161 │          │ affected │ 2.1.28+dfsg1-9ubuntu3              │                   │ cyrus-sasl: Heap buffer overflow in cyrus-sasl               │
+│                     │                 │          │          │                                    │                   │ add_to_challenge() allows malicious server to crash...       │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-107161                  │
+├─────────────────────┤                 │          │          │                                    ├───────────────────┤                                                              │
+│ libsasl2-modules-db │                 │          │          │                                    │                   │                                                              │
+│                     │                 │          │          │                                    │                   │                                                              │
+│                     │                 │          │          │                                    │                   │                                                              │
+├─────────────────────┼─────────────────┤          │          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ libsmartcols1       │ CVE-2026-78408  │          │          │ 2.41.3-3ubuntu2.2                  │                   │ util-linux: util-linux: nsenter --join-cgroup leaks root     │
+│                     │                 │          │          │                                    │                   │ cgroup migration authority                                   │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-78408                   │
+├─────────────────────┼─────────────────┼──────────┤          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ libsystemd0         │ CVE-2026-40228  │ LOW      │          │ 259.9-0ubuntu0.1                   │                   │ systemd: systemd-journald: Unintended output to user         │
+│                     │                 │          │          │                                    │                   │ terminals via logger command                                 │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-40228                   │
+├─────────────────────┤                 │          │          │                                    ├───────────────────┤                                                              │
+│ libudev1            │                 │          │          │                                    │                   │                                                              │
+│                     │                 │          │          │                                    │                   │                                                              │
+│                     │                 │          │          │                                    │                   │                                                              │
+├─────────────────────┼─────────────────┼──────────┤          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ libuuid1            │ CVE-2026-78408  │ MEDIUM   │          │ 2.41.3-3ubuntu2.2                  │                   │ util-linux: util-linux: nsenter --join-cgroup leaks root     │
+│                     │                 │          │          │                                    │                   │ cgroup migration authority                                   │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-78408                   │
+├─────────────────────┤                 │          │          ├────────────────────────────────────┼───────────────────┤                                                              │
+│ login               │                 │          │          │ 1:4.16.0-2+really2.41.3-3ubuntu2.2 │                   │                                                              │
+│                     │                 │          │          │                                    │                   │                                                              │
+│                     │                 │          │          │                                    │                   │                                                              │
+├─────────────────────┼─────────────────┼──────────┤          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ login.defs          │ CVE-2024-56433  │ LOW      │          │ 1:4.17.4-2ubuntu3                  │                   │ shadow-utils: Default subordinate ID configuration in        │
+│                     │                 │          │          │                                    │                   │ /etc/login.defs could lead to compromise                     │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2024-56433                   │
+├─────────────────────┼─────────────────┼──────────┤          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ mount               │ CVE-2026-78408  │ MEDIUM   │          │ 2.41.3-3ubuntu2.2                  │                   │ util-linux: util-linux: nsenter --join-cgroup leaks root     │
+│                     │                 │          │          │                                    │                   │ cgroup migration authority                                   │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-78408                   │
+├─────────────────────┼─────────────────┤          │          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ p11-kit             │ CVE-2026-13757  │          │          │ 0.26.2-2                           │                   │ p11-kit: Stack exhaustion via unbounded recursion in RPC     │
+│                     │                 │          │          │                                    │                   │ attribute parsing                                            │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-13757                   │
+├─────────────────────┤                 │          │          │                                    ├───────────────────┤                                                              │
+│ p11-kit-modules     │                 │          │          │                                    │                   │                                                              │
+│                     │                 │          │          │                                    │                   │                                                              │
+│                     │                 │          │          │                                    │                   │                                                              │
+├─────────────────────┼─────────────────┼──────────┤          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ passwd              │ CVE-2024-56433  │ LOW      │          │ 1:4.17.4-2ubuntu3                  │                   │ shadow-utils: Default subordinate ID configuration in        │
+│                     │                 │          │          │                                    │                   │ /etc/login.defs could lead to compromise                     │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2024-56433                   │
+├─────────────────────┼─────────────────┼──────────┼──────────┼────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ perl-base           │ CVE-2026-82560  │ MEDIUM   │ fixed    │ 5.40.1-7ubuntu0.3                  │ 5.40.1-7ubuntu0.4 │ Pod::Text versions before 6.1.1 for Perl allow CPU and       │
+│                     │                 │          │          │                                    │                   │ memory exhausti ......                                       │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-82560                   │
+│                     ├─────────────────┤          ├──────────┤                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-9538   │          │ affected │                                    │                   │ perl-Archive-Tar: perl-Archive-Tar: Denial of Service via    │
+│                     │                 │          │          │                                    │                   │ crafted tar header with large entry...                       │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-9538                    │
+├─────────────────────┼─────────────────┤          │          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ rust-coreutils      │ CVE-2026-35341  │          │          │ 0.10.0-1ubuntu2~26.04.1            │                   │ rust-coreutils: uutils coreutils mkfifo: Information         │
+│                     │                 │          │          │                                    │                   │ disclosure via unauthorized file permission modification     │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35341                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35344  │          │          │                                    │                   │ The dd utility in uutils coreutils suppresses errors during  │
+│                     │                 │          │          │                                    │                   │ file trunc ......                                            │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35344                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35345  │          │          │                                    │                   │ A vulnerability in the tail utility of uutils coreutils      │
+│                     │                 │          │          │                                    │                   │ allows for the...                                            │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35345                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35348  │          │          │                                    │                   │ The sort utility in uutils coreutils is vulnerable to a      │
+│                     │                 │          │          │                                    │                   │ process panic...                                             │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35348                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35350  │          │          │                                    │                   │ The cp utility in uutils coreutils fails to properly handle  │
+│                     │                 │          │          │                                    │                   │ setuid and...                                                │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35350                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35351  │          │          │                                    │                   │ The mv utility in uutils coreutils fails to preserve file    │
+│                     │                 │          │          │                                    │                   │ ownership du...                                              │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35351                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35354  │          │          │                                    │                   │ A Time-of-Check to Time-of-Use (TOCTOU) vulnerability exists │
+│                     │                 │          │          │                                    │                   │ in the mv ...                                                │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35354                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35357  │          │          │                                    │                   │ The cp utility in uutils coreutils is vulnerable to an       │
+│                     │                 │          │          │                                    │                   │ information dis...                                           │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35357                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35359  │          │          │                                    │                   │ A Time-of-Check to Time-of-Use (TOCTOU) vulnerability in the │
+│                     │                 │          │          │                                    │                   │ cp utilit ...                                                │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35359                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35360  │          │          │                                    │                   │ The touch utility in uutils coreutils is vulnerable to a     │
+│                     │                 │          │          │                                    │                   │ Time-of-Check ......                                         │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35360                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35363  │          │          │                                    │                   │ A vulnerability in the rm utility of uutils coreutils allows │
+│                     │                 │          │          │                                    │                   │ the bypas...                                                 │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35363                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35364  │          │          │                                    │                   │ rust-coreutils: uutils coreutils mv utility: Arbitrary File  │
+│                     │                 │          │          │                                    │                   │ Overwrite via TOCTOU Race Condition...                       │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35364                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35367  │          │          │                                    │                   │ The nohup utility in uutils coreutils creates its default    │
+│                     │                 │          │          │                                    │                   │ output file, ......                                          │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35367                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35368  │          │          │                                    │                   │ rust-coreutils: uutils coreutils: Privilege escalation and   │
+│                     │                 │          │          │                                    │                   │ arbitrary code execution in chroot utility...                │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35368                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35370  │          │          │                                    │                   │ The id utility in uutils coreutils miscalculates the groups= │
+│                     │                 │          │          │                                    │                   │ section o ......                                             │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35370                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35371  │          │          │                                    │                   │ The id utility in uutils coreutils exhibits incorrect        │
+│                     │                 │          │          │                                    │                   │ behavior in its ...                                          │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35371                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35373  │          │          │                                    │                   │ A logic error in the ln utility of uutils coreutils causes   │
+│                     │                 │          │          │                                    │                   │ the...                                                       │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35373                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35374  │          │          │                                    │                   │ A Time-of-Check to Time-of-Use (TOCTOU) vulnerability exists │
+│                     │                 │          │          │                                    │                   │ in the sp ...                                                │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35374                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35376  │          │          │                                    │                   │ A Time-of-Check to Time-of-Use (TOCTOU) vulnerability exists │
+│                     │                 │          │          │                                    │                   │ in the ch ...                                                │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35376                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-35377  │          │          │                                    │                   │ A logic error in the env utility of uutils coreutils causes  │
+│                     │                 │          │          │                                    │                   │ a...                                                         │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-35377                   │
+├─────────────────────┼─────────────────┤          │          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ tar                 │ CVE-2026-18477  │          │          │ 1.35+dfsg-4ubuntu0.4               │                   │ tar: tar: TOCTOU in incremental dumpdir 'X' rename handling  │
+│                     │                 │          │          │                                    │                   │ allows restore path...                                       │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-18477                   │
+│                     ├─────────────────┤          │          │                                    ├───────────────────┼──────────────────────────────────────────────────────────────┤
+│                     │ CVE-2026-18508  │          │          │                                    │                   │ tar: tar: --one-top-level hardlink targets not confined to   │
+│                     │                 │          │          │                                    │                   │ top-level directory enabling arbitrary...                    │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-18508                   │
+├─────────────────────┼─────────────────┤          │          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ util-linux          │ CVE-2026-78408  │          │          │ 2.41.3-3ubuntu2.2                  │                   │ util-linux: util-linux: nsenter --join-cgroup leaks root     │
+│                     │                 │          │          │                                    │                   │ cgroup migration authority                                   │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2026-78408                   │
+├─────────────────────┼─────────────────┤          │          ├────────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────┤
+│ wget                │ CVE-2021-31879  │          │          │ 1.25.0-2ubuntu4.4                  │                   │ wget: authorization header disclosure on redirect            │
+│                     │                 │          │          │                                    │                   │ https://avd.aquasec.com/nvd/cve-2021-31879                   │
+└─────────────────────┴─────────────────┴──────────┴──────────┴────────────────────────────────────┴───────────────────┴──────────────────────────────────────────────────────────────┘
+
+usr/bin/pebble (gobinary)
+=========================
+Total: 1 (UNKNOWN: 1, LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0)
+
+┌─────────┬────────────────┬──────────┬────────┬───────────────────┬─────────────────┬──────────────────────────────────────────────────────────────┐
+│ Library │ Vulnerability  │ Severity │ Status │ Installed Version │  Fixed Version  │                            Title                             │
+├─────────┼────────────────┼──────────┼────────┼───────────────────┼─────────────────┼──────────────────────────────────────────────────────────────┤
+│ stdlib  │ CVE-2026-97054 │ UNKNOWN  │ fixed  │ v1.27.3           │ 1.26.11, 1.27.4 │ For HTTP/1 servers, when MaxBytesReader's limit is exceeded, │
+│         │                │          │        │                   │                 │ "Connecti ...                                                │
+│         │                │          │        │                   │                 │ https://avd.aquasec.com/nvd/cve-2026-97054                   │
+└─────────┴────────────────┴──────────┴────────┴───────────────────┴─────────────────┴──────────────────────────────────────────────────────────────┘
+[Pipeline] catchError
+[Pipeline] {
+[Pipeline] sh
++ bash security/trivy.sh image --scanners vuln --severity CRITICAL --exit-code 1 --quiet youssefbouaouina82/student-management:15
+
+Report Summary
+
+┌─────────────────────────────────────────────────────────┬──────────┬─────────────────┐
+│                         Target                          │   Type   │ Vulnerabilities │
+├─────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+│ youssefbouaouina82/student-management:15 (ubuntu 26.04) │  ubuntu  │        0        │
+├─────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+│ app/app.jar                                             │   jar    │        0        │
+├─────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+│ usr/bin/pebble                                          │ gobinary │        0        │
+└─────────────────────────────────────────────────────────┴──────────┴─────────────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+[Pipeline] }
+[Pipeline] // catchError
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Push Docker Image)
+[Pipeline] withCredentials
+Masking supported pattern matches of $DOCKER_PASS
+[Pipeline] {
+[Pipeline] sh
++ docker login -u+  youssefbouaouina82 --password-stdin
+echo ****
+Login Succeeded
+[Pipeline] sh
++ docker push youssefbouaouina82/student-management:15
+The push refers to repository [docker.io/youssefbouaouina82/student-management]
+f7822ed33003: Waiting
+f61686225354: Waiting
+5c2b1bdac2ac: Waiting
+91efa06f9c7e: Waiting
+f13a4d498606: Waiting
+5e469be2fc3b: Waiting
+e9d963469cca: Waiting
+edafa32f5d9e: Waiting
+f3f25b84a7d7: Waiting
+f61686225354: Waiting
+5c2b1bdac2ac: Waiting
+91efa06f9c7e: Waiting
+f13a4d498606: Waiting
+5e469be2fc3b: Waiting
+e9d963469cca: Waiting
+edafa32f5d9e: Waiting
+f3f25b84a7d7: Waiting
+f7822ed33003: Waiting
+5e469be2fc3b: Waiting
+e9d963469cca: Waiting
+edafa32f5d9e: Waiting
+f3f25b84a7d7: Waiting
+f7822ed33003: Waiting
+f61686225354: Waiting
+5c2b1bdac2ac: Waiting
+91efa06f9c7e: Waiting
+f13a4d498606: Waiting
+f7822ed33003: Waiting
+f61686225354: Waiting
+5c2b1bdac2ac: Waiting
+91efa06f9c7e: Waiting
+f13a4d498606: Waiting
+5e469be2fc3b: Waiting
+e9d963469cca: Waiting
+edafa32f5d9e: Waiting
+f3f25b84a7d7: Waiting
+f7822ed33003: Waiting
+f61686225354: Waiting
+5c2b1bdac2ac: Waiting
+91efa06f9c7e: Waiting
+f13a4d498606: Waiting
+5e469be2fc3b: Waiting
+e9d963469cca: Waiting
+edafa32f5d9e: Waiting
+f3f25b84a7d7: Waiting
+edafa32f5d9e: Waiting
+f3f25b84a7d7: Waiting
+f7822ed33003: Waiting
+f61686225354: Waiting
+5c2b1bdac2ac: Waiting
+91efa06f9c7e: Waiting
+f13a4d498606: Waiting
+5e469be2fc3b: Waiting
+e9d963469cca: Waiting
+5e469be2fc3b: Waiting
+e9d963469cca: Waiting
+edafa32f5d9e: Waiting
+f3f25b84a7d7: Waiting
+f7822ed33003: Waiting
+f61686225354: Waiting
+5c2b1bdac2ac: Waiting
+91efa06f9c7e: Waiting
+f13a4d498606: Waiting
+5e469be2fc3b: Waiting
+e9d963469cca: Waiting
+edafa32f5d9e: Waiting
+f3f25b84a7d7: Waiting
+f7822ed33003: Waiting
+f61686225354: Waiting
+5c2b1bdac2ac: Waiting
+91efa06f9c7e: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+f7822ed33003: Layer already exists
+f61686225354: Waiting
+5c2b1bdac2ac: Waiting
+91efa06f9c7e: Waiting
+f13a4d498606: Waiting
+5e469be2fc3b: Waiting
+e9d963469cca: Waiting
+edafa32f5d9e: Waiting
+91efa06f9c7e: Waiting
+f13a4d498606: Waiting
+5e469be2fc3b: Waiting
+e9d963469cca: Waiting
+edafa32f5d9e: Waiting
+f3f25b84a7d7: Waiting
+f61686225354: Waiting
+5c2b1bdac2ac: Waiting
+91efa06f9c7e: Waiting
+f13a4d498606: Waiting
+5e469be2fc3b: Waiting
+e9d963469cca: Waiting
+edafa32f5d9e: Waiting
+f3f25b84a7d7: Layer already exists
+f61686225354: Waiting
+5c2b1bdac2ac: Waiting
+5e469be2fc3b: Waiting
+e9d963469cca: Layer already exists
+edafa32f5d9e: Layer already exists
+f61686225354: Layer already exists
+5c2b1bdac2ac: Waiting
+91efa06f9c7e: Layer already exists
+f13a4d498606: Waiting
+5c2b1bdac2ac: Waiting
+f13a4d498606: Waiting
+5c2b1bdac2ac: Waiting
+f13a4d498606: Waiting
+5c2b1bdac2ac: Pushed
+f13a4d498606: Pushed
+5e469be2fc3b: Pushed
+15: digest: sha256:fefda5db8c24a5bd641421f1ed7babed3d4b4984bd1184861a6073f8cdc7811c size: 2267
+[Pipeline] sh
++ docker push youssefbouaouina82/student-management:latest
+The push refers to repository [docker.io/youssefbouaouina82/student-management]
+91efa06f9c7e: Waiting
+edafa32f5d9e: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+e9d963469cca: Waiting
+f7822ed33003: Waiting
+5c2b1bdac2ac: Waiting
+5e469be2fc3b: Waiting
+f61686225354: Waiting
+e9d963469cca: Waiting
+f7822ed33003: Waiting
+5c2b1bdac2ac: Waiting
+5e469be2fc3b: Waiting
+f61686225354: Waiting
+91efa06f9c7e: Waiting
+edafa32f5d9e: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+e9d963469cca: Waiting
+f7822ed33003: Waiting
+5c2b1bdac2ac: Waiting
+5e469be2fc3b: Waiting
+f61686225354: Waiting
+91efa06f9c7e: Waiting
+edafa32f5d9e: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+e9d963469cca: Waiting
+f7822ed33003: Waiting
+5c2b1bdac2ac: Waiting
+5e469be2fc3b: Waiting
+f61686225354: Waiting
+91efa06f9c7e: Waiting
+edafa32f5d9e: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+5e469be2fc3b: Waiting
+f61686225354: Waiting
+91efa06f9c7e: Waiting
+edafa32f5d9e: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+e9d963469cca: Waiting
+f7822ed33003: Waiting
+5c2b1bdac2ac: Waiting
+5e469be2fc3b: Waiting
+f61686225354: Waiting
+91efa06f9c7e: Waiting
+edafa32f5d9e: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+e9d963469cca: Waiting
+f7822ed33003: Waiting
+5c2b1bdac2ac: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+e9d963469cca: Waiting
+f7822ed33003: Waiting
+5c2b1bdac2ac: Waiting
+5e469be2fc3b: Waiting
+f61686225354: Waiting
+91efa06f9c7e: Waiting
+edafa32f5d9e: Waiting
+91efa06f9c7e: Waiting
+edafa32f5d9e: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+e9d963469cca: Waiting
+f7822ed33003: Waiting
+5c2b1bdac2ac: Waiting
+5e469be2fc3b: Waiting
+f61686225354: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+e9d963469cca: Waiting
+f7822ed33003: Waiting
+5c2b1bdac2ac: Waiting
+5e469be2fc3b: Waiting
+f61686225354: Waiting
+91efa06f9c7e: Waiting
+edafa32f5d9e: Waiting
+5e469be2fc3b: Waiting
+f61686225354: Waiting
+91efa06f9c7e: Waiting
+edafa32f5d9e: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+e9d963469cca: Waiting
+f7822ed33003: Waiting
+5c2b1bdac2ac: Waiting
+5e469be2fc3b: Waiting
+f61686225354: Waiting
+91efa06f9c7e: Waiting
+edafa32f5d9e: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+e9d963469cca: Waiting
+f7822ed33003: Waiting
+5c2b1bdac2ac: Waiting
+5e469be2fc3b: Waiting
+f61686225354: Waiting
+91efa06f9c7e: Waiting
+edafa32f5d9e: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+e9d963469cca: Waiting
+f7822ed33003: Waiting
+5c2b1bdac2ac: Waiting
+5e469be2fc3b: Waiting
+f61686225354: Layer already exists
+91efa06f9c7e: Waiting
+edafa32f5d9e: Layer already exists
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+e9d963469cca: Waiting
+f7822ed33003: Waiting
+5c2b1bdac2ac: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+e9d963469cca: Waiting
+f7822ed33003: Waiting
+5c2b1bdac2ac: Waiting
+5e469be2fc3b: Waiting
+91efa06f9c7e: Waiting
+f13a4d498606: Waiting
+f3f25b84a7d7: Waiting
+e9d963469cca: Layer already exists
+f7822ed33003: Layer already exists
+5c2b1bdac2ac: Waiting
+5e469be2fc3b: Waiting
+91efa06f9c7e: Waiting
+f13a4d498606: Layer already exists
+f3f25b84a7d7: Layer already exists
+5c2b1bdac2ac: Layer already exists
+5e469be2fc3b: Waiting
+91efa06f9c7e: Waiting
+91efa06f9c7e: Layer already exists
+5e469be2fc3b: Layer already exists
+latest: digest: sha256:fefda5db8c24a5bd641421f1ed7babed3d4b4984bd1184861a6073f8cdc7811c size: 2267
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Kubernetes Deploy)
+[Pipeline] withCredentials
+Masking supported pattern matches of $MYSQL_ROOT_PASSWORD
+[Pipeline] {
+[Pipeline] sh
++ kubectl apply -f k8s/namespace.yaml
+namespace/devops unchanged
++ kubectl -n devops create secret generic mysql-secret --from-literal=password=**** --dry-run=client -o yaml
++ kubectl apply -f -
+secret/mysql-secret unchanged
++ kubectl apply -f k8s/mysql.yaml
+persistentvolumeclaim/mysql-pvc unchanged
+deployment.apps/mysql unchanged
+service/mysql unchanged
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] sh
++ + sed s|__IMAGE__|youssefbouaouina82/student-management:15| k8s/spring-app.yaml
+kubectl apply -f -
+configmap/spring-config unchanged
+deployment.apps/spring-app configured
+service/spring-app unchanged
+[Pipeline] sh
++ kubectl -n devops rollout status deployment/spring-app --timeout=600s
+Waiting for deployment "spring-app" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "spring-app" rollout to finish: 1 old replicas are pending termination...
+deployment "spring-app" successfully rolled out
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Kubernetes Verify)
+[Pipeline] sh
++ echo === Pods ===
+=== Pods ===
++ kubectl get pods -n devops
+NAME                          READY   STATUS    RESTARTS   AGE
+mysql-9bd89cc69-wmcfl         1/1     Running   0          37m
+spring-app-86856774cf-z4p96   1/1     Running   0          69s
++ echo === Services ===
+=== Services ===
++ kubectl get svc -n devops
+NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+mysql        ClusterIP   10.100.204.163   <none>        3306/TCP         37m
+spring-app   NodePort    10.98.127.58     <none>        8089:30089/TCP   37m
++ echo === Deployments ===
+=== Deployments ===
++ kubectl get deployments -n devops
+NAME         READY   UP-TO-DATE   AVAILABLE   AGE
+mysql        1/1     1            1           37m
+spring-app   1/1     1            1           37m
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Security Acceptance Tests (Gauntlt))
+[Pipeline] sh
+Waiting for the application on http://192.168.56.10:8089 ...
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+sha256:f439705feb4467d44e8b6d03fd47df6cf95491e5011a11c78f8b8b9c32079520
+[Pipeline] catchError
+[Pipeline] {
+[Pipeline] sh
+[DEPRECATION] The trollop gem has been renamed to optimist and will no longer be supported. Please switch to optimist as soon as possible.
+*** THIS RUBY IMPLEMENTATION DOESN'T REPORT FILE AND LINE FOR PROCS ***
+Feature: HTTP security acceptance tests of the deployed API (DevSecOps Phase 2 - Acceptance)
+
+  Background:                  # ./http.attack:3
+    Given "curl" is installed  # UNKNOWN:-1
+    And the following profile: # UNKNOWN:-1
+      | name     | value                     |
+      | base_url | http://192.168.56.10:8089 |
+
+  Scenario: The application is up and healthy # ./http.attack:9
+    When I launch a "curl" attack with:       # UNKNOWN:-1
+      """
+      curl -s <base_url>/student/actuator/health
+      """
+    Then the output should contain "UP"       # UNKNOWN:-1
+
+  Scenario: The environment actuator endpoint (config and secrets) is not exposed # ./http.attack:16
+    When I launch a "curl" attack with:                                           # UNKNOWN:-1
+      """
+      curl -s -o /dev/null -w "code=%{http_code}" <base_url>/student/actuator/env
+      """
+    Then the output should contain "code=404"                                     # UNKNOWN:-1
+
+  Scenario: The heap dump actuator endpoint (memory contents) is not exposed # ./http.attack:23
+    When I launch a "curl" attack with:                                      # UNKNOWN:-1
+      """
+      curl -s -o /dev/null -w "code=%{http_code}" <base_url>/student/actuator/heapdump
+      """
+    Then the output should contain "code=404"                                # UNKNOWN:-1
+
+  Scenario: HTTP TRACE is disabled (Cross-Site Tracing) # ./http.attack:30
+    When I launch a "curl" attack with:                 # UNKNOWN:-1
+      """
+      curl -s -o /dev/null -w "code=%{http_code}" -X TRACE <base_url>/student/students/getAllStudents
+      """
+    Then the output should not contain "code=200"       # UNKNOWN:-1
+
+  Scenario: HTTP security headers are present (clickjacking, MIME sniffing, CSP) # ./http.attack:37
+    When I launch a "curl" attack with:                                          # UNKNOWN:-1
+      """
+      curl -s -D - -o /dev/null <base_url>/student/actuator/health
+      """
+    Then the output should contain "X-Frame-Options: DENY"                       # UNKNOWN:-1
+    And the output should contain "X-Content-Type-Options: nosniff"              # UNKNOWN:-1
+    And the output should contain "Content-Security-Policy:"                     # UNKNOWN:-1
+
+  Scenario: Invalid input does not leak a Java stack trace     # ./http.attack:46
+    When I launch a "curl" attack with:                        # UNKNOWN:-1
+      """
+      curl -s <base_url>/student/students/getStudent/not-a-number
+      """
+    Then the output should not contain "Exception"             # UNKNOWN:-1
+    And the output should not contain "at org.springframework" # UNKNOWN:-1
+
+@slow
+Feature: Network exposure of the student-management host (DevSecOps Phase 2 - Acceptance)
+  Only the application port may be reachable from outside; the database must not be.
+
+  Background:                  # ./nmap.attack:5
+    Given "nmap" is installed  # UNKNOWN:-1
+    And the following profile: # UNKNOWN:-1
+      | name     | value         |
+      | hostname | 192.168.56.10 |
+
+  Scenario: The application port is open           # ./nmap.attack:11
+    When I launch an "nmap" attack with:           # UNKNOWN:-1
+      """
+      nmap -Pn -p 8089 <hostname>
+      """
+    Then the output should match /8089.tcp\s+open/ # UNKNOWN:-1
+
+  Scenario: MySQL is not exposed outside the Kubernetes cluster # ./nmap.attack:18
+    When I launch an "nmap" attack with:                        # UNKNOWN:-1
+      """
+      nmap -Pn -p 3306,33060 <hostname>
+      """
+    Then the output should not match /3306.tcp\s+open/          # UNKNOWN:-1
+    And the output should not match /33060.tcp\s+open/          # UNKNOWN:-1
+
+8 scenarios (8 passed)
+36 steps (36 passed)
+0m1.285s
+[Pipeline] }
+[Pipeline] // catchError
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Security Smoke Test (OWASP ZAP))
+[Pipeline] sh
++ mkdir -p reports/zap
++ chmod 777 reports/zap
+[Pipeline] catchError
+[Pipeline] {
+[Pipeline] sh
+Using the Automation Framework
+Total of 15 URLs
+PASS: Vulnerable JS Library (Powered by Retire.js) [10003]
+PASS: In Page Banner Information Leak [10009]
+PASS: Cookie No HttpOnly Flag [10010]
+PASS: Cookie Without Secure Flag [10011]
+PASS: Re-examine Cache-control Directives [10015]
+PASS: Cross-Domain JavaScript Source File Inclusion [10017]
+PASS: Content-Type Header Missing [10019]
+PASS: Anti-clickjacking Header [10020]
+PASS: X-Content-Type-Options Header Missing [10021]
+PASS: Information Disclosure - Debug Error Messages [10023]
+PASS: Information Disclosure - Sensitive Information in URL [10024]
+PASS: Information Disclosure - Sensitive Information in HTTP Referrer Header [10025]
+PASS: HTTP Parameter Override [10026]
+PASS: Information Disclosure - Suspicious Comments [10027]
+PASS: Off-site Redirect [10028]
+PASS: Cookie Poisoning [10029]
+PASS: User Controllable Charset [10030]
+PASS: User Controllable HTML Element Attribute (Potential XSS) [10031]
+PASS: Viewstate [10032]
+PASS: Directory Browsing [10033]
+PASS: Heartbleed OpenSSL Vulnerability (Indicative) [10034]
+PASS: Strict-Transport-Security Header [10035]
+PASS: HTTP Server Response Header [10036]
+PASS: Server Leaks Information via "X-Powered-By" HTTP Response Header Field(s) [10037]
+PASS: X-Backend-Server Header Information Leak [10039]
+PASS: Secure Pages Include Mixed Content [10040]
+PASS: HTTP to HTTPS Insecure Transition in Form Post [10041]
+PASS: HTTPS to HTTP Insecure Transition in Form Post [10042]
+PASS: User Controllable JavaScript Event (XSS) [10043]
+PASS: Big Redirect Detected (Potential Sensitive Information Leak) [10044]
+PASS: Retrieved from Cache [10050]
+PASS: X-ChromeLogger-Data (XCOLD) Header Information Leak [10052]
+PASS: Cookie without SameSite Attribute [10054]
+PASS: X-Debug-Token Information Leak [10056]
+PASS: Username Hash Found [10057]
+PASS: X-AspNet-Version Response Header [10061]
+PASS: PII Disclosure [10062]
+PASS: Hash Disclosure [10097]
+PASS: Cross-Domain Misconfiguration [10098]
+PASS: Source Code Disclosure [10099]
+PASS: Weak Authentication Method [10105]
+PASS: Reverse Tabnabbing [10108]
+PASS: Dangerous JS Functions [10110]
+PASS: Authentication Request Identified [10111]
+PASS: Session Management Response Identified [10112]
+PASS: Verification Request Identified [10113]
+PASS: Script Served From Malicious Domain (polyfill) [10115]
+PASS: ZAP is Out of Date [10116]
+PASS: Absence of Anti-CSRF Tokens [10202]
+PASS: Private IP Disclosure [2]
+PASS: Server Side Technology Version with Known Vulnerabilities [20020]
+PASS: Session ID in URL Rewrite [3]
+PASS: Script Passive Scan Rules [50001]
+PASS: Stats Passive Scan Rule [50003]
+PASS: Insecure JSF ViewState [90001]
+PASS: Java Serialization Object [90002]
+PASS: Sub Resource Integrity Attribute Missing [90003]
+PASS: Insufficient Site Isolation Against Spectre Vulnerability [90004]
+PASS: Charset Mismatch [90011]
+PASS: Application Error Disclosure [90022]
+PASS: WSDL File Detection [90030]
+PASS: Loosely Scoped Cookie [90033]
+WARN-NEW: Content Security Policy (CSP) Header Not Set [10038] x 1 
+	http://192.168.56.10:8089/ (404 Not Found)
+WARN-NEW: Non-Storable Content [10049] x 8 
+	http://192.168.56.10:8089/student (302 Found)
+	http://192.168.56.10:8089/student/ (404 Not Found)
+	http://192.168.56.10:8089/student/swagger-ui (404 Not Found)
+	http://192.168.56.10:8089/student/swagger-ui/favicon-32x32.png (200 OK)
+	http://192.168.56.10:8089/student/swagger-ui/index.html (200 OK)
+WARN-NEW: CSP: style-src unsafe-inline [10055] x 1 
+	http://192.168.56.10:8089/student/swagger-ui/index.html (200 OK)
+WARN-NEW: Permissions Policy Header Not Set [10063] x 3 
+	http://192.168.56.10:8089/ (404 Not Found)
+	http://192.168.56.10:8089/robots.txt (404 Not Found)
+	http://192.168.56.10:8089/sitemap.xml (404 Not Found)
+WARN-NEW: Timestamp Disclosure - Unix [10096] x 5 
+	http://192.168.56.10:8089/student/swagger-ui/swagger-ui-standalone-preset.js (200 OK)
+	http://192.168.56.10:8089/student/swagger-ui/swagger-ui-standalone-preset.js (200 OK)
+	http://192.168.56.10:8089/student/swagger-ui/swagger-ui-standalone-preset.js (200 OK)
+	http://192.168.56.10:8089/student/swagger-ui/swagger-ui-standalone-preset.js (200 OK)
+	http://192.168.56.10:8089/student/swagger-ui/swagger-ui-standalone-preset.js (200 OK)
+WARN-NEW: Modern Web Application [10109] x 1 
+	http://192.168.56.10:8089/student/swagger-ui/index.html (200 OK)
+FAIL-NEW: 0	FAIL-INPROG: 0	WARN-NEW: 6	WARN-INPROG: 0	INFO: 0	IGNORE: 0	PASS: 62
+Automation plan warnings:
+	Job spider error accessing URL http://192.168.56.10:8089/ status code returned : 404 expected 200
+[Pipeline] }
+[Pipeline] // catchError
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Continuous Monitoring Check)
+[Pipeline] sh
+Simulating a scanning / brute-force burst against http://192.168.56.10:8089 ...
+=== Prometheus scrape targets ===
+  prometheus             up
+  student-management     up
+=== Security alert rules ===
+  StudentAppDown               state=inactive
+  SuspiciousClientErrorRate    state=firing
+  ServerErrorRate              state=inactive
+  HeapExhaustion               state=inactive
+=== Active alerts ===
+  SuspiciousClientErrorRate    firing  High rate of HTTP 4xx responses: possible scanning or brute-force activity
+RESULT: OK
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] archiveArtifacts
+Archiving artifacts
+[Pipeline] echo
+Pipeline terminé avec succès!
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS

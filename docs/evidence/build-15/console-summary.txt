@@ -1,0 +1,45 @@
+
+▶ STAGE: Declarative: Checkout SCM
+
+▶ STAGE: Secrets Scan (pre-commit)
+Checking staged files for sensitive content..............................Passed
+Checking staged files for sensitive file types...........................Passed
+Checking local hooks against latest release..............................Passed
+
+▶ STAGE: Clean
+
+▶ STAGE: Compile
+
+▶ STAGE: Package
+
+▶ STAGE: SCA + IaC Scan (Trivy)
+
+▶ STAGE: JS Dependency Scan (Retire.js)
+Retire.js findings by severity: none
+
+▶ STAGE: SonarQube Analysis (SAST)
+[INFO] QUALITY GATE STATUS: PASSED - View details on http://localhost:9000/dashboard?id=tn.esprit%3Astudent-management
+
+▶ STAGE: Build Docker Image
+
+▶ STAGE: Container Scan (Trivy)
+
+▶ STAGE: Push Docker Image
+
+▶ STAGE: Kubernetes Deploy
+deployment "spring-app" successfully rolled out
+
+▶ STAGE: Kubernetes Verify
+
+▶ STAGE: Security Acceptance Tests (Gauntlt)
+8 scenarios (8 passed
+36 steps (36 passed
+
+▶ STAGE: Security Smoke Test (OWASP ZAP)
+FAIL-NEW: 0	FAIL-INPROG: 0	WARN-NEW: 6	WARN-INPROG: 0	INFO: 0	IGNORE: 0	PASS: 62
+
+▶ STAGE: Continuous Monitoring Check
+  SuspiciousClientErrorRate    state=firing
+  SuspiciousClientErrorRate    firing  High rate of HTTP 4xx responses: possible scanning or brute-force activity
+RESULT: OK
+Finished: SUCCESS

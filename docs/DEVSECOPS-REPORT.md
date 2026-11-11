@@ -66,7 +66,8 @@ Everything runs in one Ubuntu VM described as code (`infra/vagrant`). Jenkins po
 | Production | Secrets management | Jenkins Credentials + Kubernetes Secret | Push / Deploy | n/a |
 | Operations | Continuous monitoring | Prometheus alert rules + Grafana | Continuous Monitoring Check | Fails if not monitored |
 
-![Jenkins pipeline: all stages](screenshots/01-jenkins-stage-view.png)
+![Jenkins pipeline: all 17 stages green (build #15)](screenshots/01-jenkins-stage-view.jpg)
+![Jenkins stages with durations](screenshots/01a-jenkins-stages-detail.jpg)
 ![Jenkins console: stage summary](screenshots/01b-console-summary.png)
 
 ---
@@ -122,6 +123,7 @@ fixed in Spring Framework 7 (a Spring Boot 4 major upgrade). The application has
 **accepted risks** in `.trivyignore`, with a justification and an expiry date (2027-01-31).
 
 ![Trivy SCA report](screenshots/05-trivy-sca.png)
+![Trivy SCA summary: 0 vulnerabilities](screenshots/05b-trivy-sca-summary.png)
 
 ### 4.3 Lab 2: Retire.js (JavaScript libraries)
 
@@ -165,7 +167,7 @@ SonarQube was already in the DevOps pipeline but only reported results. The buil
 and enforces** the Quality Gate (`-Dsonar.qualitygate.wait=true`), so a failed gate stops the
 pipeline before the image is built. Result: Quality Gate **Passed**.
 
-![SonarQube](screenshots/08-sonarqube.png)
+![SonarQube](screenshots/08-sonarqube.jpg)
 
 ### 4.6 Container security: image scan (Trivy image)
 
@@ -205,7 +207,7 @@ and two attack files:
 
 **Integration:** the stage runs after the deployment, waits for the health endpoint, then runs
 `gauntlt` in its container with host networking. Output: `reports/gauntlt-report.txt`.
-**Result: all scenarios passed.**
+**Result (build #15): 8 scenarios passed, 36 steps passed.**
 
 ![Gauntlt results](screenshots/10-gauntlt.png)
 
@@ -233,7 +235,15 @@ missing *Content-Security-Policy*, *Anti-clickjacking*, *X-Content-Type-Options*
 - `server.error.include-*=never`: no stack traces, exception names or messages in error responses.
 - The vulnerable JS library was fixed by the Retire.js remediation (4.3).
 
-**Final run (build #3):** ZAP_RESULT_PLACEHOLDER
+**Final run (build #15):** **0 FAIL, 6 WARN, 62 PASS** (build #2 had 11 WARN and 57 PASS). Remaining alerts:
+
+| Risk | Alert | Comment |
+|---|---|---|
+| Medium | CSP: `style-src 'unsafe-inline'` | Swagger UI needs inline styles; accepted for the documentation page |
+| Medium | CSP header not set (1 URL) | The server root `/` (outside the `/student` application) answers Tomcat's default 404 |
+| Low | Permissions-Policy not set (3 URLs) | Same root / static paths outside the application filter |
+| Low | Timestamp disclosure | Unix timestamps in Swagger UI JavaScript (false positive) |
+| Info | Modern Web Application, cache-related | Informational only |
 
 ![OWASP ZAP baseline report](screenshots/11-zap.png)
 
@@ -273,15 +283,17 @@ Prometheus scrapes the application (`/student/actuator/prometheus`). We added se
    the state of each security rule and the active alerts in `reports/monitoring-check.txt`.
    The stage fails if the application is not monitored.
 
-MONITORING_RESULT_PLACEHOLDER
+**Result in build #15:** the simulated attack was detected. `SuspiciousClientErrorRate` went to
+**FIRING** (4xx rate about 2.5 req/s, threshold 0.2), the Grafana dashboard shows the 404 spike, and
+the stage ended with `RESULT: OK`.
 
 `StudentAppDown` was also seen **firing** on the fresh cluster before the first deployment, which
 shows that availability monitoring works.
 
 ![Monitoring check](screenshots/12b-monitoring-check.png)
-![Prometheus security alerts](screenshots/12-prometheus-alerts.png)
+![Prometheus security alerts](screenshots/12-prometheus-alerts.jpg)
 ![Prometheus targets](screenshots/12c-prometheus-targets.png)
-![Grafana](screenshots/13-grafana.png)
+![Grafana DevSecOps dashboard: 404 burst from the simulated attack](screenshots/13-grafana.jpg)
 
 ---
 
@@ -294,15 +306,16 @@ shows that availability monitoring works.
 | `trivy-iac-report.html/.txt` | Trivy (IaC) | Development |
 | `retire-report.json/.txt` | Retire.js (Lab 2) | Development |
 | SonarQube project dashboard | SonarQube | Development |
+| Grafana dashboard *DevSecOps Security Monitoring* | Grafana (`infra/monitoring/grafana/dashboards`) | Operations |
 | `trivy-image-report.html/.txt` | Trivy (image) | Development |
 | `gauntlt-report.txt` | Gauntlt (Lab 3) | Acceptance |
 | `zap/zap-baseline-report.html/.json/.md` | OWASP ZAP | Production |
 | `monitoring-check.txt` | Prometheus API | Operations |
 
 All are archived by Jenkins (`archiveArtifacts 'reports/**'`) and downloadable from each build.
-A copy of the final build's reports is in `docs/evidence/`.
+A copy of the final build's reports (build #15) and its console log is in `docs/evidence/build-15/`.
 
-![Jenkins build artifacts](screenshots/02-jenkins-artifacts.png)
+![Jenkins build artifacts](screenshots/02-jenkins-artifacts.jpg)
 
 ## 9. Problems met and how we solved them
 
@@ -312,7 +325,8 @@ A copy of the final build's reports is in `docs/evidence/`.
 | Gauntlt 1.0.13 does not run on recent Ruby; Debian 11 images are archived | Custom image on Ruby 3.1 (Debian 12) |
 | Trivy timed out on the first image scan (vulnerability DB download) | Persistent DB cache + `--timeout 20m` |
 | Security tools would need installing on the Jenkins VM | Every tool runs in a Docker container (`python`, `trivy`, `node`, `gauntlt`, `zap`) |
-| VM disk 99% full stopped the Jenkins executor | Removed unused images; documented the disk requirement |
+| VM disk 99% full: Jenkins executor went offline and SonarQube's Elasticsearch became read-only | Removed unused images, smaller pre-commit image (Alpine), restarted SonarQube |
+| Polling every minute queued duplicate builds while the executor was offline | Polling every 2 minutes, queue cleared |
 
 ## 10. Limits and next steps
 
@@ -332,3 +346,18 @@ A copy of the final build's reports is in `docs/evidence/`.
 3. The job `student-management` (`infra/jenkins/student-management-job.xml`) builds on every push,
    or use **Build Now**.
 4. Results: build page → *Artifacts* (`reports/`), SonarQube :9000, Prometheus :9090/alerts, Grafana :3000.
+
+## 12. Final result (build #15)
+
+| Stage | Result |
+|---|---|
+| Secrets Scan (Lab 1) | 3 hooks Passed |
+| SCA + IaC (Trivy) | jar: 0 vulnerabilities; IaC: Dockerfile 1 LOW, spring-app 2 MEDIUM |
+| JS Dependency Scan (Lab 2, Retire.js) | 0 findings |
+| SonarQube | Quality Gate Passed |
+| Container Scan (Trivy) | 0 CRITICAL (OS: 62, 2 HIGH unfixed upstream; jar: 0) |
+| Deploy | hardened pod rolled out |
+| Gauntlt (Lab 3) | 8/8 scenarios, 36/36 steps passed |
+| OWASP ZAP | 0 FAIL, 6 WARN, 62 PASS |
+| Monitoring | attack detected, alert FIRING, RESULT OK |
+| **Pipeline** | **SUCCESS** (17 stages, 15 min) |

@@ -1,0 +1,8 @@
+# Loads the dashboards in infra/monitoring/grafana/dashboards at Grafana start-up
+apiVersion: 1
+providers:
+  - name: devsecops
+    folder: DevSecOps
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards
