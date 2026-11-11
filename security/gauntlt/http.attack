@@ -1,0 +1,43 @@
+Feature: HTTP security acceptance tests of the deployed API (DevSecOps Phase 2 - Acceptance)
+
+  Background:
+    Given "curl" is installed
+    And the following profile:
+      | name     | value                      |
+      | base_url | http://192.168.56.10:8089  |
+
+  Scenario: The application is up and healthy
+    When I launch a "curl" attack with:
+      """
+      curl -s <base_url>/student/actuator/health
+      """
+    Then the output should contain "UP"
+
+  Scenario: The environment actuator endpoint (config and secrets) is not exposed
+    When I launch a "curl" attack with:
+      """
+      curl -s -o /dev/null -w "code=%{http_code}" <base_url>/student/actuator/env
+      """
+    Then the output should contain "code=404"
+
+  Scenario: The heap dump actuator endpoint (memory contents) is not exposed
+    When I launch a "curl" attack with:
+      """
+      curl -s -o /dev/null -w "code=%{http_code}" <base_url>/student/actuator/heapdump
+      """
+    Then the output should contain "code=404"
+
+  Scenario: HTTP TRACE is disabled (Cross-Site Tracing)
+    When I launch a "curl" attack with:
+      """
+      curl -s -o /dev/null -w "code=%{http_code}" -X TRACE <base_url>/student/students/getAllStudents
+      """
+    Then the output should not contain "code=200"
+
+  Scenario: Invalid input does not leak a Java stack trace
+    When I launch a "curl" attack with:
+      """
+      curl -s <base_url>/student/students/getStudent/not-a-number
+      """
+    Then the output should not contain "Exception"
+    And the output should not contain "at org.springframework"

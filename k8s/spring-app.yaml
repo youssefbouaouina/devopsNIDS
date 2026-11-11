@@ -23,11 +23,37 @@ spec:
       labels:
         app: spring-app
     spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: tmp
+          emptyDir: {}
       containers:
         - name: spring-app
           image: __IMAGE__
           ports:
             - containerPort: 8089
+          # Hardening from the Trivy IaC scan (KSV-0001/0003/0014/0011/0015/0016/0018)
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 250m
+              memory: 384Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi
+          volumeMounts:
+            - name: tmp           # embedded Tomcat needs a writable /tmp
+              mountPath: /tmp
           envFrom:
             - configMapRef:
                 name: spring-config

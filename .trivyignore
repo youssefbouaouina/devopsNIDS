@@ -1,0 +1,9 @@
+# Accepted vulnerabilities (DevSecOps risk acceptance). Each entry needs a
+# justification and a review date. Reviewed: 2026-11-11.
+
+# spring-webmvc 6.2.x - Server-Sent Events (SSE) handling. Only fixed in Spring
+# Framework 7.0.9 (= Spring Boot 4 major upgrade). The application exposes no
+# SSE / SseEmitter endpoints, so the vulnerable code path is not reachable.
+# Action: migrate to Spring Boot 4. Review by 2027-01-31.
+CVE-2026-47884 exp:2027-01-31
+CVE-2026-47890 exp:2027-01-31

@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.5</version>
+        <version>3.5.15</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>tn.esprit</groupId>
@@ -28,6 +28,12 @@
     </scm>
     <properties>
         <java.version>17</java.version>
+        <!-- DevSecOps SCA remediation: override Spring Boot managed versions with
+             the patched releases reported by Trivy (see reports/trivy-sca-report) -->
+        <tomcat.version>10.1.59</tomcat.version>
+        <jackson-bom.version>2.21.7</jackson-bom.version>
+        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <log4j2.version>2.25.5</log4j2.version>
     </properties>
     <dependencies>
         <dependency>

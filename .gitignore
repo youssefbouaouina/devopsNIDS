@@ -34,3 +34,9 @@ build/
 
 ### Vagrant ###
 .vagrant/
+
+### DevSecOps ###
+# Course material from Blackboard (not ours to publish)
+lab-instructions/
+# Security reports are generated per build and archived by Jenkins
+reports/

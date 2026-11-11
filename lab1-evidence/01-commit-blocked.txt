@@ -1,0 +1,18 @@
+Checking staged files for sensitive content..............................Failed
+- hook id: secrets_filecontent
+- exit code: 1
+
+fake.key.pem may contain sensitive information due to the file type
+
+Checking staged files for sensitive file types...........................Failed
+- hook id: secrets_filename
+- exit code: 1
+
+Potentially sensitive string matching rule: aws_secret_access_key found on line 1 of fake.aws.file
+
+Checking local hooks against latest release..............................Passed
+- hook id: hooks_version_check
+- duration: 0.46s
+
+All HMRC hooks are up to date
+

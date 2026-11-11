@@ -1,0 +1,21 @@
+# Lab 1 - Pre-commit security hooks (DevSecOps, Development phase).
+# Developers: `pipx install pre-commit && pre-commit install` once per clone.
+# Jenkins runs the same hooks on every build (stage "Secrets Scan").
+#
+# Lab material and lab-1 evidence contain the deliberately fake AWS key used to
+# prove the hook blocks commits, so they are excluded from scanning.
+exclude: '^(lab1-evidence|lab-instructions)/'
+
+repos:
+-   repo: https://github.com/hmrc/security-git-hooks
+    rev: release/1.15.0
+    hooks:
+    -   id: secrets_filecontent
+        name: Checking staged files for sensitive content
+        exclude: ".tar$|.gz$|.jar$|.7z$|.rar$|.bz2$|.zip$|.gzip$|.war$|.ear$|.xlsx$|.xls$|.docx$|.doc$|.pptx$|.pdf$|.jpg$|.png$|.jpeg$|.tif$|.tiff$|.gif$|.bmp$|.webp$|.svg$|.ico$|.psd$|.exe$|.dll$|.dmg$|.deb$|.rpm$"
+    -   id: secrets_filename
+        name: Checking staged files for sensitive file types
+        exclude: ".tar$|.gz$|.jar$|.7z$|.rar$|.bz2$|.zip$|.gzip$|.war$|.ear$|.xlsx$|.xls$|.docx$|.doc$|.pptx$|.pdf$|.jpg$|.png$|.jpeg$|.tif$|.tiff$|.gif$|.bmp$|.webp$|.svg$|.ico$|.psd$|.exe$|.dll$|.dmg$|.deb$|.rpm$"
+    -   id: hooks_version_check
+        name: Checking local hooks against latest release
+        verbose: true

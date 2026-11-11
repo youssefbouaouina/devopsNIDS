@@ -1,0 +1,99 @@
+Script started on 2026-10-22 22:39:49+00:00 [TERM="xterm-256color" TTY="/dev/pts/1" COLUMNS="156" LINES="42"]
+[?2004h]0;root@devops: ~/lab1-precommitroot@devops:~/lab1-precommit# [7mpre-commit --version[27mpre-commit --version
+[?2004lpre-commit 4.7.0
+[?2004h]0;root@devops: ~/lab1-precommitroot@devops:~/lab1-precommit# [7mcat .pre-commit-config.yaml[27mcat .pre-commit-config.yaml
+[?2004lrepos:
+-   repo: https://github.com/hmrc/security-git-hooks
+    rev: release/1.15.0
+    hooks:
+    -   id: secrets_filecontent
+        name: Checking staged files for sensitive content
+        exclude: ".tar$|.gz$|.jar$|.7z$|.rar$|.bz2$|.zip$|.gzip$|.war$|.ear$|.xlsx$|.xls$|.docx$|.doc$|.pptx$|.pdf$|.jpg$|.png$|.jpeg$|.tif$|.tiff$|.gif$|.bmp$|.webp$|.svg$|.ico$|.psd$|.exe$|.dll$|.dmg$|.deb$|.rpm$"
+    -   id: secrets_filename
+        name: Checking staged files for sensitive file types
+        exclude: ".tar$|.gz$|.jar$|.7z$|.rar$|.bz2$|.zip$|.gzip$|.war$|.ear$|.xlsx$|.xls$|.docx$|.doc$|.pptx$|.pdf$|.jpg$|.png$|.jpeg$|.tif$|.tiff$|.gif$|.bmp$|.webp$|.svg$|.ico$|.psd$|.exe$|.dll$|.dmg$|.deb$|.rpm$"
+    -   id: hooks_version_check
+        name: Checking local hooks against latest release
+        verbose: true
+[?2004h]0;root@devops: ~/lab1-precommitroot@devops:~/lab1-precommit# [7mcat repository.yaml[27mcat repository.yaml
+[?2004lrepoVisibility: private_12E5349CFB8BBA30AF464C24760B70343C0EAE9E9BD99156345DD0852C2E0F6F
+[?2004h]0;root@devops: ~/lab1-precommitroot@devops:~/lab1-precommit# [7mls -la fake.key.pem fake.aws.file[27m[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cls -la fake.key.pem fake.aws.file
+[?2004l-rw-r--r-- 1 root root 65 Oct 22 22:21 fake.aws.file
+-rw-r--r-- 1 root root  0 Oct 22 22:21 fake.key.pem
+[?2004h]0;root@devops: ~/lab1-precommitroot@devops:~/lab1-precommit# [7mcat fake.aws.file[27mcat fake.aws.file
+[?2004laws_secret_access_key = 1ye+VarkHMg7o6MNjwWIqOYICe03lfA+KPPAmeaY
+[?2004h]0;root@devops: ~/lab1-precommitroot@devops:~/lab1-precommit# git status
+[?2004lOn branch master
+Your branch is up to date with 'origin/master'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	[32mnew file:   .pre-commit-config.yaml[m
+	[32mnew file:   fake.aws.file[m
+	[32mnew file:   fake.key.pem[m
+	[32mnew file:   repository.yaml[m
+
+[?2004h]0;root@devops: ~/lab1-precommitroot@devops:~/lab1-precommit# git add -A
+[?2004l[?2004h]0;root@devops: ~/lab1-precommitroot@devops:~/lab1-precommit# [7mgit commit -m 'testing pre-commits'[27m[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cgit commit -m 'testing pre-commits'
+[?2004lChecking staged files for sensitive content..............................Failed
+- hook id: secrets_filecontent
+- exit code: 1
+
+fake.key.pem may contain sensitive information due to the file type
+
+Checking staged files for sensitive file types...........................Failed
+- hook id: secrets_filename
+- exit code: 1
+
+Potentially sensitive string matching rule: aws_secret_access_key found on line 1 of fake.aws.file
+
+Checking local hooks against latest release..............................Passed
+- hook id: hooks_version_check
+- duration: 0.59s
+
+All HMRC hooks are up to date
+
+[?2004h]0;root@devops: ~/lab1-precommitroot@devops:~/lab1-precommit# [7mgit log --oneline -1[27mgit log --oneline -1
+[?2004l[?1h=[33mdd36a32[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add Kubernetes deploy stage[m
+[K[?1l>[?2004h]0;root@devops: ~/lab1-precommitroot@devops:~/lab1-precommit# [7mpre-commit run secrets_filename[27mpre-commit run secrets_filename
+[?2004lChecking staged files for sensitive file types...........................Failed
+- hook id: secrets_filename
+- exit code: 1
+
+Potentially sensitive string matching rule: aws_secret_access_key found on line 1 of fake.aws.file
+
+[?2004h]0;root@devops: ~/lab1-precommitroot@devops:~/lab1-precommit# [7mpre-commit run secrets_filecontent[27m[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cpre-commit run secrets_filecontent
+[?2004lChecking staged files for sensitive content..............................Failed
+- hook id: secrets_filecontent
+- exit code: 1
+
+fake.key.pem may contain sensitive information due to the file type
+
+[?2004h]0;root@devops: ~/lab1-precommitroot@devops:~/lab1-precommit# [7mpre-commit run --all-files[27mpre-commit run --all-files
+[?2004lChecking staged files for sensitive content..............................Failed
+- hook id: secrets_filecontent
+- exit code: 1
+
+fake.key.pem may contain sensitive information due to the file type
+
+Checking staged files for sensitive file types...........................Failed
+- hook id: secrets_filename
+- exit code: 1
+
+Potentially sensitive string matching rule: aws_secret_access_key found on line 1 of fake.aws.file
+
+Checking local hooks against latest release..............................Passed
+- hook id: hooks_version_check
+- duration: 0.59s
+
+All HMRC hooks are up to date
+All HMRC hooks are up to date
+All HMRC hooks are up to date
+All HMRC hooks are up to date
+All HMRC hooks are up to date
+All HMRC hooks are up to date
+
+[?2004h]0;root@devops: ~/lab1-precommitroot@devops:~/lab1-precommit# [7mexit[27mexit
+[?2004lexit
+
+Script done on 2026-10-22 22:41:19+00:00 [COMMAND_EXIT_CODE="1"]

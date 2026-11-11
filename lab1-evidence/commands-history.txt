@@ -1,0 +1,43 @@
+    1  sudo apt install pip
+    2  git config --global user.name "youssefbouaouina"
+    3  git config --global user.email "youssef.bouaouina@esprit.tn"
+    4  cd ~
+    5  git clone https://github.com/youssefbouaouina/devopsNIDS.git lab1-precommit
+    6  cd lab1-precommit
+    7  pip install pre-commit
+    8  sudo apt update
+    9  sudo apt install -y pipx
+   10  pipx install pre-commit
+   11  pipx ensurepath
+   12  source ~/.bashrc
+   13  pre-commit --version
+   14  nano .pre-commit-config.yaml
+   15  pre-commit install
+   16  pre-commit autoupdate
+   17  cat .pre-commit-config.yaml | grep rev
+   18  touch fake.key.pem
+   19  echo "aws_secret_access_key = 1ye+VarkHMg7o6MNjwWIqOYICe03lfA+KPPAmeaY" > fake.aws.file
+   20  git add -A
+   21  git commit -m 'testing pre-commits'
+   22  pre-commit autoupdate
+   23  cat .pre-commit-config.yaml | grep rev
+   24  pre-commit run secrets_filename
+   25  cat > repository.yaml <<'EOF'
+repoVisibility: private_12E5349CFB8BBA30AF464C24760B70343C0EAE9E9BD99156345DD0852C2E0F6F
+EOF
+
+   26  git add repository.yaml
+   27  nano .pre-commit-config.yaml
+   28  git add -A
+   29  git commit -m 'testing pre-commits'
+   30  pre-commit run secrets_filename
+   31  pre-commit run secrets_filecontent
+   32  pre-commit run --all-files
+   33  mkdir -p /vagrant/lab1-evidence
+   34  cd ~/lab1-precommit
+   35  export PRE_COMMIT_COLOR=never
+   36  script -q /vagrant/lab1-evidence/lab1-session.log
+   37  git commit -m 'testing pre-commits' 2>&1 | tee /vagrant/lab1-evidence/01-commit-blocked.txt
+   38  pre-commit run --all-files 2>&1 | tee /vagrant/lab1-evidence/02-scan-all-files.txt
+   39  cp .pre-commit-config.yaml repository.yaml /vagrant/lab1-evidence/
+   40  history > /vagrant/lab1-evidence/commands-history.txt

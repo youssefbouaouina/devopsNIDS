@@ -1,0 +1,38 @@
+# DevSecOps Phase 4 (Operations): continuous security monitoring rules.
+# Loaded by Prometheus; visible at http://192.168.56.10:9090/alerts
+groups:
+  - name: student-management-security
+    rules:
+      - alert: StudentAppDown
+        expr: up{job="student-management"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "student-management is unreachable (possible DoS or failed deployment)"
+
+      - alert: SuspiciousClientErrorRate
+        # Bursts of 4xx responses are typical of scanners, fuzzing or brute force
+        # (the pipeline's Gauntlt and ZAP stages trigger this on purpose).
+        expr: sum(rate(http_server_requests_seconds_count{job="student-management", status=~"4.."}[2m])) > 0.2
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rate of HTTP 4xx responses: possible scanning or brute-force activity"
+
+      - alert: ServerErrorRate
+        expr: sum(rate(http_server_requests_seconds_count{job="student-management", status=~"5.."}[5m])) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "HTTP 5xx errors: application failing under input or attack"
+
+      - alert: HeapExhaustion
+        expr: sum(jvm_memory_used_bytes{job="student-management", area="heap"}) / sum(jvm_memory_max_bytes{job="student-management", area="heap"} > 0) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "JVM heap above 90% (resource exhaustion / memory DoS risk)"

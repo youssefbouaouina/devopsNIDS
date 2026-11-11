@@ -1,0 +1,24 @@
+@slow
+Feature: Network exposure of the student-management host (DevSecOps Phase 2 - Acceptance)
+  Only the application port may be reachable from outside; the database must not be.
+
+  Background:
+    Given "nmap" is installed
+    And the following profile:
+      | name     | value         |
+      | hostname | 192.168.56.10 |
+
+  Scenario: The application port is open
+    When I launch an "nmap" attack with:
+      """
+      nmap -Pn -p 8089 <hostname>
+      """
+    Then the output should match /8089.tcp\s+open/
+
+  Scenario: MySQL is not exposed outside the Kubernetes cluster
+    When I launch an "nmap" attack with:
+      """
+      nmap -Pn -p 3306,33060 <hostname>
+      """
+    Then the output should not match /3306.tcp\s+open/
+    And the output should not match /33060.tcp\s+open/
