@@ -73,7 +73,21 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.1.0</version>
+            <!-- 2.1.0 bundled Swagger UI 4.18.2 with DOMPurify 3.0.1 (CVE-2024-47875, found by Retire.js) -->
+            <version>2.8.17</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.webjars</groupId>
+                    <artifactId>swagger-ui</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <!-- Retire.js remediation: Swagger UI 5.34.1 ships DOMPurify 3.4.17
+                 (fixes CVE-2026-116803, HIGH). Version also set in application.properties. -->
+            <groupId>org.webjars</groupId>
+            <artifactId>swagger-ui</artifactId>
+            <version>5.34.1</version>
         </dependency>
     </dependencies>
 

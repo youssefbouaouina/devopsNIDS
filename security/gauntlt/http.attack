@@ -34,6 +34,15 @@ Feature: HTTP security acceptance tests of the deployed API (DevSecOps Phase 2 -
       """
     Then the output should not contain "code=200"
 
+  Scenario: HTTP security headers are present (clickjacking, MIME sniffing, CSP)
+    When I launch a "curl" attack with:
+      """
+      curl -s -D - -o /dev/null <base_url>/student/actuator/health
+      """
+    Then the output should contain "X-Frame-Options: DENY"
+    And the output should contain "X-Content-Type-Options: nosniff"
+    And the output should contain "Content-Security-Policy:"
+
   Scenario: Invalid input does not leak a Java stack trace
     When I launch a "curl" attack with:
       """

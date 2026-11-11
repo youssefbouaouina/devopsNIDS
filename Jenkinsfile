@@ -85,6 +85,16 @@ pipeline {
             }
         }
 
+        stage('JS Dependency Scan (Retire.js)') {
+            // Lab 2: Retire.js on the JavaScript libraries bundled in the application
+            // (Swagger UI webjar). HIGH/CRITICAL vulnerable libraries mark the build UNSTABLE.
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    sh 'bash security/retire.sh'
+                }
+            }
+        }
+
         stage('SonarQube Analysis (SAST)') {
             // Static analysis; the build now waits for and enforces the Quality Gate.
             steps {
@@ -215,15 +225,16 @@ pipeline {
                 sh '''#!/bin/bash
                     set -euo pipefail
                     mkdir -p reports
-                    {
-                      echo "=== Prometheus scrape targets ==="
-                      curl -fs "$PROMETHEUS_URL/api/v1/targets?state=active" \
-                        | grep -oE '"job":"[^"]+"|"health":"[^"]+"' | paste - - || true
-                      echo "=== Loaded alert rules ==="
-                      curl -fs "$PROMETHEUS_URL/api/v1/rules" | grep -oE '"name":"[^"]+"' || true
-                      echo "=== Firing alerts ==="
-                      curl -fs "$PROMETHEUS_URL/api/v1/alerts" | grep -oE '"alertname":"[^"]+"|"state":"[^"]+"' | paste - - || true
-                    } | tee reports/monitoring-check.txt
+                    # Simulated attack: ~100 s of requests to admin/login pages that do not
+                    # exist (scanner / brute-force pattern). The SuspiciousClientErrorRate
+                    # alert must detect it.
+                    echo "Simulating a scanning / brute-force burst against $APP_URL ..."
+                    for i in $(seq 1 400); do
+                      curl -s -o /dev/null "$APP_URL/student/admin/login?attempt=$i" || true
+                      sleep 0.2
+                    done
+                    sleep 30
+                    python3 security/monitoring_check.py "$PROMETHEUS_URL" | tee reports/monitoring-check.txt
                 '''
             }
         }
