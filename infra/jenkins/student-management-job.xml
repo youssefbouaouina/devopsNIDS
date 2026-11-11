@@ -1,0 +1,32 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<!-- Jenkins pipeline job "student-management" (DevSecOps). Install with:
+     sudo install -d -o jenkins -g jenkins /var/lib/jenkins/jobs/student-management
+     sudo install -o jenkins -g jenkins -m 644 /vagrant/infra/jenkins/student-management-job.xml \
+       /var/lib/jenkins/jobs/student-management/config.xml && sudo systemctl restart jenkins -->
+<flow-definition plugin="workflow-job">
+  <description>DevSecOps pipeline: secrets scan, SCA, IaC, SAST, container scan, deploy, Gauntlt, ZAP, monitoring.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps">
+    <scm class="hudson.plugins.git.GitSCM" plugin="git">
+      <configVersion>2</configVersion>
+      <userRemoteConfigs>
+        <hudson.plugins.git.UserRemoteConfig>
+          <url>https://github.com/youssefbouaouina/devopsNIDS.git</url>
+        </hudson.plugins.git.UserRemoteConfig>
+      </userRemoteConfigs>
+      <branches>
+        <hudson.plugins.git.BranchSpec>
+          <name>*/devsecops/lab1-pre-commit</name>
+        </hudson.plugins.git.BranchSpec>
+      </branches>
+      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+      <submoduleCfg class="empty-list"/>
+      <extensions/>
+    </scm>
+    <scriptPath>Jenkinsfile</scriptPath>
+    <lightweight>true</lightweight>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>
