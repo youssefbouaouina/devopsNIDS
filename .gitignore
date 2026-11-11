@@ -40,3 +40,7 @@ build/
 lab-instructions/
 # Security reports are generated per build and archived by Jenkins
 reports/
+
+# Office / LibreOffice lock files
+.~lock.*#
+~$*
