@@ -57,6 +57,24 @@ with sync_playwright() as p:
     page = ctx.pages[0] if ctx.pages else ctx.new_page()
 
     wait_signed_in(page, JENKINS, "/login", "Jenkins")
+    # Sign in to the other two sites now, while the build may still be running
+    wait_signed_in(page, SONAR, "/sessions/new", "SonarQube")
+    page.wait_for_timeout(2500)
+    shot(page, "08-sonarqube.png")
+    wait_signed_in(page, GRAFANA, "/login", "Grafana")
+    page.wait_for_timeout(5000)
+    shot(page, "13-grafana.png")
+
+    print(f"Waiting for Jenkins build #{build} to finish ...", flush=True)
+    while True:
+        r = page.request.get(f"{JENKINS}{build}/api/json?tree=building,result")
+        if r.ok and not r.json().get("building", True):
+            print("Build finished:", r.json().get("result"), flush=True)
+            break
+        time.sleep(20)
+    page.goto(JENKINS)
+    page.wait_for_load_state("networkidle")
+    page.wait_for_timeout(3000)
     shot(page, "01-jenkins-stage-view.png")
     for path, name in ((f"{build}/", "02-jenkins-artifacts.png"),
                        (f"{build}/pipeline-graph/", "01c-jenkins-pipeline-graph.png"),
@@ -69,13 +87,5 @@ with sync_playwright() as p:
                 shot(page, name)
         except Exception as e:  # noqa: BLE001
             print("skip", name, e, flush=True)
-
-    wait_signed_in(page, SONAR, "/sessions/new", "SonarQube")
-    page.wait_for_timeout(2500)
-    shot(page, "08-sonarqube.png")
-
-    wait_signed_in(page, GRAFANA, "/login", "Grafana")
-    page.wait_for_timeout(5000)
-    shot(page, "13-grafana.png")
     ctx.close()
 print("DONE", flush=True)

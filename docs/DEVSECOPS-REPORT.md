@@ -12,10 +12,18 @@
 
 Start from the CI/CD pipeline built in the 4th-year DevOps module and turn it into a full
 **DevSecOps** pipeline, adding security to each phase of the software lifecycle
-(Development, Acceptance, Production, Operations). Following the course's advice ("Do less, but
-do it better"), we picked one well-integrated tool or practice per security activity
-instead of many shallow ones. Every tool runs automatically in Jenkins, and every report is
-kept as a build artifact.
+(Development, Acceptance, Production, Operations), as presented in the course material.
+The three course labs are part of the pipeline:
+
+| Course lab | Where it runs in our pipeline |
+|---|---|
+| Lab 1: Pre-commit security hooks | Developer `git commit` hook **and** first Jenkins stage *Secrets Scan* |
+| Lab 2: Retire.js | Jenkins stage *JS Dependency Scan (Retire.js)* |
+| Lab 3: Gauntlt | Jenkins stage *Security Acceptance Tests (Gauntlt)* against the deployed app |
+
+Following the course's advice ("Do less, but do it better"), we picked one well-integrated
+tool per security activity. Every tool runs automatically in Jenkins, and every report is
+archived with the build.
 
 ## 2. Starting point: the DevOps pipeline (4th year)
 
@@ -32,37 +40,40 @@ GitHub ─▶ Jenkins ─▶ Maven ─▶ SonarQube ─▶ Docker Hub ─▶ Kub
 | Minikube | Deployment (namespace `devops`, MySQL + Spring app) |
 | Prometheus + Grafana | Metrics and dashboards |
 
-Everything runs in a single Ubuntu VM described as code (`infra/vagrant`).
+Everything runs in one Ubuntu VM described as code (`infra/vagrant`). Jenkins polls GitHub every
+2 minutes, so a `git push` starts the pipeline automatically.
 
-## 3. Target DevSecOps pipeline
+## 3. The DevSecOps pipeline
 
 ```
- DEVELOPMENT                                  ACCEPTANCE        PRODUCTION       OPERATIONS
- ┌──────────────┐ ┌───────┐ ┌──────────┐ ┌───────┐ ┌───────┐ ┌──────┐ ┌────────┐ ┌──────────┐ ┌──────────────┐
- │Secrets scan  │▶│ Build │▶│SCA + IaC │▶│ SAST  │▶│Image  │▶│Push +│▶│Gauntlt │▶│ OWASP ZAP│▶│ Prometheus   │
- │(pre-commit)  │ │(Maven)│ │ (Trivy)  │ │(Sonar │ │scan   │ │Deploy│ │attacks │ │ baseline │ │ alerts check │
- │   Lab 1      │ │       │ │Lab 2 eq. │ │ gate) │ │(Trivy)│ │ (K8s)│ │ Lab 3  │ │          │ │              │
- └──────────────┘ └───────┘ └──────────┘ └───────┘ └───────┘ └──────┘ └────────┘ └──────────┘ └──────────────┘
-         every stage writes to reports/  ──▶  archived by Jenkins with each build
+ ─────────────────────────── DEVELOPMENT ───────────────────────────    ACCEPTANCE   PRODUCTION   OPERATIONS
+ Secrets ▶ Build ▶ SCA+IaC ▶ Retire.js ▶ SAST ▶ Build ▶ Image ▶ Push ▶ Deploy ▶ Gauntlt ▶ OWASP ZAP ▶ Monitoring
+ scan             (Trivy)    (Lab 2)    (Sonar  image   scan          (K8s)   (Lab 3)    baseline     check +
+ (Lab 1)                                 gate)          (Trivy)                                       attack demo
+              every stage writes to reports/  ──▶  archived by Jenkins with each build
 ```
 
-| Phase | Security activity (course) | Tool chosen | Jenkins stage | Gate |
+| Phase | Security activity (course) | Tool | Jenkins stage | Gate |
 |---|---|---|---|---|
 | Development (pre-commit) | Pre-commit security hooks | HMRC `security-git-hooks` via `pre-commit` | Secrets Scan (pre-commit) | Fails build |
-| Development (commit) | Security Components Analysis | Trivy (`rootfs` on the jar) | SCA + IaC Scan (Trivy) | CRITICAL → UNSTABLE |
+| Development (commit) | Security Components Analysis (Java) | Trivy (`rootfs` on the jar) | SCA + IaC Scan (Trivy) | CRITICAL → UNSTABLE |
 | Development (commit) | Infrastructure as Code analysis | Trivy (`config`) | SCA + IaC Scan (Trivy) | Report |
+| Development (commit) | Security Components Analysis (JavaScript) | **Retire.js** | JS Dependency Scan (Retire.js) | HIGH → UNSTABLE |
 | Development (commit) | Static code analysis (SAST) | SonarQube + Quality Gate | SonarQube Analysis (SAST) | Fails build |
 | Development (commit) | Container security | Trivy (`image`) | Container Scan (Trivy) | CRITICAL → UNSTABLE |
-| Acceptance | Security acceptance testing | Gauntlt (nmap + curl adapters) | Security Acceptance Tests (Gauntlt) | Failure → UNSTABLE |
-| Production | Security smoke tests | OWASP ZAP Baseline Scan | Security Smoke Test (OWASP ZAP) | FAIL alerts → UNSTABLE |
+| Acceptance | Security acceptance testing | **Gauntlt** (nmap + curl) | Security Acceptance Tests (Gauntlt) | Failure → UNSTABLE |
+| Production | Security smoke tests | OWASP ZAP Baseline | Security Smoke Test (OWASP ZAP) | FAIL alerts → UNSTABLE |
 | Production | Secrets management | Jenkins Credentials + Kubernetes Secret | Push / Deploy | n/a |
-| Operations | Continuous monitoring | Prometheus alert rules + Grafana | Continuous Monitoring Check | Report |
+| Operations | Continuous monitoring | Prometheus alert rules + Grafana | Continuous Monitoring Check | Fails if not monitored |
+
+![Jenkins pipeline: all stages](screenshots/01-jenkins-stage-view.png)
+![Jenkins console: stage summary](screenshots/01b-console-summary.png)
 
 ---
 
 ## 4. Phase 1: Development
 
-### 4.1 Pre-commit security hooks (Lab 1)
+### 4.1 Lab 1: Pre-commit security hooks
 
 **Goal:** stop secrets (keys, passwords, tokens, key files) from ever reaching the repository.
 
@@ -71,56 +82,66 @@ Everything runs in a single Ubuntu VM described as code (`infra/vagrant`).
 - `secrets_filename`: flags sensitive file types (`*.pem`, `*.key`, …)
 - `hooks_version_check`: checks the hooks are up to date
 
-**Configuration:** `.pre-commit-config.yaml` at the repository root (plus `repository.yaml`, required
-by the HMRC hooks). Lab evidence (`lab1-evidence/`) and course material are excluded, because they
-deliberately contain the fake AWS key used for the test.
+**Configuration:** `.pre-commit-config.yaml` at the repository root (plus `repository.yaml`, which
+the HMRC hooks require). Lab evidence (`lab1-evidence/`) and course material are excluded, because
+they deliberately contain the fake AWS key used for the test.
 
 **Integration:**
 1. *Developer side:* `pipx install pre-commit && pre-commit install`. Every `git commit` runs the hooks.
 2. *Pipeline side:* the **first** Jenkins stage runs `pre-commit run --all-files` in a `python:3.12`
-   container, so the rule applies even to commits made without the local hook.
+   container, so the rule also applies to commits made without the local hook.
 
 **Test (as in the lab):** `touch fake.key.pem` and
 `echo aws_secret_access_key = 1ye+Vark… > fake.aws.file`, then `git commit`. Both hooks
 **Failed** and the commit was refused. The same files planted in the Jenkins workspace make the
-stage exit with code 1. On the real code base all hooks **Passed**.
+stage exit with code 1. On the real code base, all hooks **Passed**.
 
-![Commit blocked by pre-commit hooks](../lab1-evidence/cap1.PNG)
-![pre-commit run --all-files](../lab1-evidence/cap2.PNG)
-![Secrets Scan stage in Jenkins](screenshots/04-stage-secrets-scan.png)
+![Lab 1: commit blocked by the hooks](../lab1-evidence/cap1.PNG)
+![Lab 1: pre-commit run --all-files](../lab1-evidence/cap2.PNG)
+![Jenkins Secrets Scan stage](screenshots/03-secrets-scan.png)
 
-### 4.2 Security Components Analysis (SCA): equivalent of Lab 2 (Retire.js)
+### 4.2 Security Components Analysis: Java dependencies (Trivy)
 
-**Why not Retire.js:** Retire.js only analyses JavaScript libraries. Our application is Java/Maven,
-so we applied the same practice (find known-vulnerable third-party components and break the
-build) with a tool that understands Java artifacts. The course slide on SCA lists OWASP
-Dependency-Check for Java. We chose **Trivy**: it reads every library packaged inside the Spring
-Boot fat jar, uses an up-to-date CVE database, and the same tool also covers IaC and container
-scanning (one tool, three practices).
+Retire.js (Lab 2) analyses JavaScript only, while the application is mainly Java/Maven. For
+the Java libraries we applied the same practice with **Trivy**, which reads every library packaged
+inside the Spring Boot fat jar. The same tool also covers IaC and container scanning.
 
-**Configuration:** `security/trivy.sh` runs Trivy 0.65.0 in a container with a persistent DB cache.
-The stage produces `trivy-sca-report.html/.txt`. A second run with
-`--severity CRITICAL --exit-code 1` marks the build **UNSTABLE** if a CRITICAL CVE is present.
+**Configuration:** `security/trivy.sh` runs Trivy 0.65.0 in a container with a persistent
+vulnerability-DB cache. Reports: `trivy-sca-report.html/.txt`. A second run with
+`--severity CRITICAL --exit-code 1` marks the build **UNSTABLE** if an unaccepted CRITICAL CVE exists.
 
-**Results and remediation:**
-
-| | Total CVEs in jar | CRITICAL | HIGH |
+| Step | CVEs in the jar | CRITICAL | HIGH |
 |---|---|---|---|
-| Before (Spring Boot 3.5.5) | 71 | 9 | 26 |
-| After upgrading to Spring Boot 3.5.15 | 22 | 7 | 6 |
-| After pinning patched Tomcat 10.1.59, Jackson 2.21.7, commons-lang3 3.18.0, log4j 2.25.5 | 5 → **0 unaccepted** | 0 | 0 |
+| Initial (Spring Boot 3.5.5) | 71 | 9 | 26 |
+| Spring Boot 3.5.15 | 22 | 7 | 6 |
+| + patched Tomcat 10.1.59, Jackson 2.21.7, commons-lang3 3.18.0, log4j 2.25.5 | **0 unaccepted** | 0 | 0 |
 
-Remaining: two `spring-webmvc` CVEs (CVE-2026-47884, CVE-2026-47890) about **Server-Sent Events**.
-They are only fixed in Spring Framework 7 (a Spring Boot 4 major upgrade). The application has no
-SSE endpoint (checked in the source), so the vulnerable code is unreachable. They are documented as
+Two `spring-webmvc` CVEs (CVE-2026-47884, CVE-2026-47890) affect **Server-Sent Events** and are only
+fixed in Spring Framework 7 (a Spring Boot 4 major upgrade). The application has no SSE endpoint
+(checked in the source code), so the vulnerable code cannot be reached. They are recorded as
 **accepted risks** in `.trivyignore`, with a justification and an expiry date (2027-01-31).
 
-![SCA report before](screenshots/05-trivy-sca-before.png)
-![SCA report after](screenshots/06-trivy-sca-after.png)
+![Trivy SCA report](screenshots/05-trivy-sca.png)
 
-### 4.3 Infrastructure as Code analysis
+### 4.3 Lab 2: Retire.js (JavaScript libraries)
 
-**Tool:** Trivy `config` (misconfiguration checks for Dockerfile and Kubernetes).
+**Where the JavaScript is:** the application serves Swagger UI (API documentation), whose
+JavaScript is bundled inside a webjar in the Spring Boot jar. `security/retire.sh` extracts every
+`.js` file from the embedded libraries and runs **Retire.js 5** on them (`node:20` container).
+Reports: `retire-report.json/.txt`. HIGH or CRITICAL vulnerable libraries mark the build UNSTABLE.
+
+| Step | Library found | Retire.js result |
+|---|---|---|
+| Initial: springdoc 2.1.0 → Swagger UI 4.18.2 | **DOMPurify 3.0.1** | **HIGH**, CVE-2024-47875 (mXSS), plus others |
+| springdoc 2.8.17 → Swagger UI 5.32.2 | DOMPurify 3.3.2 | 2 HIGH, 20 MEDIUM, 12 LOW |
+| Swagger UI webjar pinned to **5.34.1** | DOMPurify 3.4.17 | **0 findings** |
+
+Trivy's Java analysis did not see this issue: it is a JavaScript library hidden inside a Java
+dependency. OWASP ZAP (Phase 3) independently reported the same "Vulnerable JS Library" before the fix.
+
+![Retire.js scan](screenshots/06-retire.png)
+
+### 4.4 Infrastructure as Code analysis (Trivy config)
 
 | File | Before | After |
 |---|---|---|
@@ -128,45 +149,47 @@ SSE endpoint (checked in the source), so the vulnerable code is unreachable. The
 | `k8s/spring-app.yaml` | 18 (3 HIGH) | 2 MEDIUM |
 | `k8s/mysql.yaml` | 16 (3 HIGH) | 16, accepted for the lab (the official MySQL image needs root at start-up) |
 
-**Remediation applied:**
-- `Dockerfile`: `eclipse-temurin:17-jre` instead of the JDK (smaller attack surface); dedicated user
-  `app` (uid 10001); `USER 10001`.
+**Remediation:**
+- `Dockerfile`: `eclipse-temurin:17-jre` instead of the JDK (smaller attack surface); a dedicated
+  user `app` (uid 10001) with `USER 10001`.
 - `k8s/spring-app.yaml`: `runAsNonRoot`, `runAsUser/Group 10001`, `seccompProfile: RuntimeDefault`,
   `allowPrivilegeEscalation: false`, `readOnlyRootFilesystem: true` (with an `emptyDir` for `/tmp`),
   `capabilities.drop: [ALL]`, CPU/memory requests and limits, `automountServiceAccountToken: false`.
+  The hardened pod deploys and runs correctly.
 
-![IaC report](screenshots/07-trivy-iac.png)
+![Trivy IaC report](screenshots/07-trivy-iac.png)
 
-### 4.4 Static analysis (SAST): SonarQube with Quality Gate
+### 4.5 Static analysis (SAST): SonarQube with Quality Gate
 
-SonarQube was already in the DevOps pipeline but only *reported*. It now **enforces** the Quality
-Gate: `-Dsonar.qualitygate.wait=true` makes the build fail when the gate fails.
+SonarQube was already in the DevOps pipeline but only reported results. The build now **waits for
+and enforces** the Quality Gate (`-Dsonar.qualitygate.wait=true`), so a failed gate stops the
+pipeline before the image is built. Result: Quality Gate **Passed**.
 
-![SonarQube dashboard](screenshots/08-sonarqube.png)
+![SonarQube](screenshots/08-sonarqube.png)
 
-### 4.5 Container security: image scan
+### 4.6 Container security: image scan (Trivy image)
 
-**Tool:** Trivy `image`, run on the freshly built image **before** it is pushed to Docker Hub.
+The freshly built image is scanned **before** it is pushed to Docker Hub.
 
-| | OS packages | Application (jar) |
+| | OS packages | Application libraries |
 |---|---|---|
-| Before (`17-jdk`, Boot 3.5.5) | 70 CVEs (2 HIGH, 0 CRITICAL) | 71 CVEs (9 CRITICAL) |
-| After (`17-jre`, patched deps) | 62 CVEs (2 HIGH, 0 CRITICAL) | 0 unaccepted CRITICAL |
+| Initial (`17-jdk`, Boot 3.5.5) | 70 CVEs (2 HIGH, 0 CRITICAL) | 71 CVEs (9 CRITICAL) |
+| Final (`17-jre`, patched libraries) | 62 CVEs (2 HIGH, 0 CRITICAL) | 0 unaccepted CRITICAL |
 
 The container runs as `uid=10001(app)`, verified with `docker run --entrypoint id`.
 
-![Image scan report](screenshots/09-trivy-image.png)
+![Trivy image report](screenshots/09-trivy-image.png)
 
 ---
 
 ## 5. Phase 2: Acceptance
 
-### 5.1 Security acceptance tests: Gauntlt (Lab 3)
+### 5.1 Lab 3: Security acceptance tests with Gauntlt
 
-**Goal:** turn security requirements into executable BDD scenarios that run against the deployed
+**Goal:** turn security requirements into executable BDD scenarios, run against the **deployed**
 application after every deployment.
 
-**Configuration:** `security/gauntlt/` contains a Dockerfile (Ruby 3.1 + gauntlt 1.0.13 + nmap + curl)
+**Configuration:** `security/gauntlt/` holds a Dockerfile (Ruby 3.1, gauntlt 1.0.13, nmap, curl)
 and two attack files:
 
 | Attack file | Scenario | Expected |
@@ -177,10 +200,12 @@ and two attack files:
 | `http.attack` | `/actuator/env` (configuration, secrets) is not exposed | 404 |
 | `http.attack` | `/actuator/heapdump` (memory contents) is not exposed | 404 |
 | `http.attack` | HTTP TRACE is disabled (Cross-Site Tracing) | not 200 |
+| `http.attack` | Security headers are present (X-Frame-Options, X-Content-Type-Options, CSP) | headers present |
 | `http.attack` | Invalid input does not leak a Java stack trace | no `Exception` in body |
 
-**Integration:** the stage runs after `Kubernetes Verify`, waits for the health endpoint, then runs
-`gauntlt` in the container with host networking. The output is saved to `reports/gauntlt-report.txt`.
+**Integration:** the stage runs after the deployment, waits for the health endpoint, then runs
+`gauntlt` in its container with host networking. Output: `reports/gauntlt-report.txt`.
+**Result: all scenarios passed.**
 
 ![Gauntlt results](screenshots/10-gauntlt.png)
 
@@ -190,18 +215,31 @@ and two attack files:
 
 ### 6.1 Security smoke test: OWASP ZAP Baseline
 
-**Goal:** after each release, quickly check that the running application shows no obvious web
+**Goal:** after each release, quickly check the running application for obvious web
 vulnerabilities (a security smoke test).
 
-**Tool:** `zap-baseline.py` (OWASP ZAP), which spiders the application from Swagger UI for 2 minutes
-and runs passive rules (security headers, cookies, information disclosure…).
+**Tool:** `zap-baseline.py` (OWASP ZAP) spiders the application from Swagger UI for 2 minutes and
+applies passive rules (security headers, cookies, information disclosure, vulnerable JS…).
 Reports: `reports/zap/zap-baseline-report.html|json|md`. FAIL-level alerts mark the build UNSTABLE.
 
-![ZAP baseline report](screenshots/11-zap.png)
+**First run (build #2):** 0 FAIL, 11 WARN, 57 PASS. The warnings included *Vulnerable JS Library*,
+missing *Content-Security-Policy*, *Anti-clickjacking*, *X-Content-Type-Options*,
+*Cross-Origin-\** and *Permissions-Policy* headers, and *Application Error Disclosure*.
+
+**Remediation:**
+- `SecurityHeadersFilter` (servlet filter) adds CSP, `X-Frame-Options: DENY`,
+  `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`,
+  `Cross-Origin-Opener/Embedder/Resource-Policy` and `Cache-Control: no-store` to every response.
+- `server.error.include-*=never`: no stack traces, exception names or messages in error responses.
+- The vulnerable JS library was fixed by the Retire.js remediation (4.3).
+
+**Final run (build #3):** ZAP_RESULT_PLACEHOLDER
+
+![OWASP ZAP baseline report](screenshots/11-zap.png)
 
 ### 6.2 Secrets management
 
-No secret is stored in the repository or in the `Jenkinsfile`:
+No secret is stored in the repository or the `Jenkinsfile`:
 
 | Secret | Stored in | Used by |
 |---|---|---|
@@ -209,32 +247,41 @@ No secret is stored in the repository or in the `Jenkinsfile`:
 | SonarQube token | Jenkins credential `sonar-token` | SAST stage |
 | MySQL root password | Jenkins credential `mysql-root-password` → Kubernetes Secret `mysql-secret` | MySQL and Spring pods (`secretKeyRef`) |
 
-Jenkins masks these values in the console log. The pre-commit stage (4.1) guarantees no new secret
-is committed.
+Jenkins masks these values in the console log, and the pre-commit stage (4.1) blocks any new
+secret from being committed.
 
 ---
 
 ## 7. Phase 4: Operations
 
-### 7.1 Continuous security monitoring: Prometheus alert rules
+### 7.1 Continuous security monitoring with Prometheus alert rules
 
-Prometheus already scraped the application (`/student/actuator/prometheus`). We added security
-alert rules (`infra/monitoring/alert-rules.yml`):
+Prometheus scrapes the application (`/student/actuator/prometheus`). We added security alert rules
+(`infra/monitoring/alert-rules.yml`):
 
-| Alert | Detects | Expression (summary) |
+| Alert | Detects | Rule (summary) |
 |---|---|---|
 | `StudentAppDown` | Application unreachable (DoS, failed deployment) | `up == 0` for 1 min |
-| `SuspiciousClientErrorRate` | Bursts of 4xx: scanning, fuzzing, brute force | 4xx rate > 0.2 req/s |
-| `ServerErrorRate` | 5xx errors under input or attack | 5xx rate > 0.1 req/s |
+| `SuspiciousClientErrorRate` | Bursts of 4xx: scanning, fuzzing, brute force | 4xx rate > 0.2 req/s for 30 s |
+| `ServerErrorRate` | 5xx errors under input or attack | 5xx rate > 0.1 req/s for 2 min |
 | `HeapExhaustion` | Memory exhaustion / memory DoS | heap > 90% for 5 min |
 
-The **Continuous Monitoring Check** stage queries the Prometheus API after deployment and records
-scrape-target health, loaded rules and firing alerts in `reports/monitoring-check.txt`.
-The Gauntlt and ZAP stages generate attack-like traffic, so `SuspiciousClientErrorRate` fires
-during the pipeline: the monitoring detects our own security tests.
+**Pipeline stage *Continuous Monitoring Check*:**
+1. Simulates an attack: about 100 seconds of requests to a non-existent admin login page
+   (a scanner or brute-force pattern).
+2. Queries the Prometheus API (`security/monitoring_check.py`) and records scrape-target health,
+   the state of each security rule and the active alerts in `reports/monitoring-check.txt`.
+   The stage fails if the application is not monitored.
 
-![Prometheus alerts](screenshots/12-prometheus-alerts.png)
-![Grafana dashboard](screenshots/13-grafana.png)
+MONITORING_RESULT_PLACEHOLDER
+
+`StudentAppDown` was also seen **firing** on the fresh cluster before the first deployment, which
+shows that availability monitoring works.
+
+![Monitoring check](screenshots/12b-monitoring-check.png)
+![Prometheus security alerts](screenshots/12-prometheus-alerts.png)
+![Prometheus targets](screenshots/12c-prometheus-targets.png)
+![Grafana](screenshots/13-grafana.png)
 
 ---
 
@@ -242,32 +289,46 @@ during the pipeline: the monitoring detects our own security tests.
 
 | Report | Tool | Phase |
 |---|---|---|
-| `secrets-scan.txt` | pre-commit / HMRC hooks | Development |
-| `trivy-sca-report.html/.txt` | Trivy (SCA) | Development |
+| `secrets-scan.txt` | pre-commit / HMRC hooks (Lab 1) | Development |
+| `trivy-sca-report.html/.txt` | Trivy (Java SCA) | Development |
 | `trivy-iac-report.html/.txt` | Trivy (IaC) | Development |
+| `retire-report.json/.txt` | Retire.js (Lab 2) | Development |
 | SonarQube project dashboard | SonarQube | Development |
 | `trivy-image-report.html/.txt` | Trivy (image) | Development |
-| `gauntlt-report.txt` | Gauntlt | Acceptance |
+| `gauntlt-report.txt` | Gauntlt (Lab 3) | Acceptance |
 | `zap/zap-baseline-report.html/.json/.md` | OWASP ZAP | Production |
 | `monitoring-check.txt` | Prometheus API | Operations |
 
 All are archived by Jenkins (`archiveArtifacts 'reports/**'`) and downloadable from each build.
+A copy of the final build's reports is in `docs/evidence/`.
 
-![Jenkins pipeline stage view](screenshots/01-jenkins-stage-view.png)
-![Archived artifacts](screenshots/02-jenkins-artifacts.png)
+![Jenkins build artifacts](screenshots/02-jenkins-artifacts.png)
 
-## 9. Limits and next steps
+## 9. Problems met and how we solved them
+
+| Problem | Solution |
+|---|---|
+| Retire.js only scans JavaScript, and the app is Java | Retire.js on the JS bundled in the jar (Swagger UI) + Trivy for the Java libraries |
+| Gauntlt 1.0.13 does not run on recent Ruby; Debian 11 images are archived | Custom image on Ruby 3.1 (Debian 12) |
+| Trivy timed out on the first image scan (vulnerability DB download) | Persistent DB cache + `--timeout 20m` |
+| Security tools would need installing on the Jenkins VM | Every tool runs in a Docker container (`python`, `trivy`, `node`, `gauntlt`, `zap`) |
+| VM disk 99% full stopped the Jenkins executor | Removed unused images; documented the disk requirement |
+
+## 10. Limits and next steps
 
 - **Spring Boot 4 migration** to remove the two accepted SSE CVEs (review date 2027-01-31).
-- **MySQL hardening:** use a non-root MySQL image (e.g. Bitnami) to fix the remaining IaC findings.
-- **Base image CVEs:** 2 HIGH in Ubuntu packages without a fix yet; consider a distroless JRE image.
-- **Authentication:** the API has no authentication. Adding Spring Security would be the next
+- **MySQL hardening:** use a non-root MySQL image to fix the remaining IaC findings.
+- **Base image:** 2 HIGH CVEs in Ubuntu packages with no fix yet; consider a distroless JRE image.
+- **Authentication:** the API has no authentication. Spring Security would be the next
   application-level control, and ZAP could then run an authenticated scan.
+- **SonarQube findings:** SonarQube reports security hotspots (e.g. persistent entities used as
+  request bodies, rule java:S4684); request DTOs would remove them.
 - **Alert routing:** connect Prometheus to Alertmanager (e-mail/Slack) so alerts reach the team.
 
-## 10. How to run
+## 11. How to run
 
 1. `cd infra/vagrant && vagrant up` (Jenkins, SonarQube, Minikube, Prometheus, Grafana).
 2. Jenkins: add the credentials `dockerhub-credentials`, `sonar-token`, `mysql-root-password`.
-3. Job `student-management` (definition in `infra/jenkins/student-management-job.xml`) → **Build Now**.
+3. The job `student-management` (`infra/jenkins/student-management-job.xml`) builds on every push,
+   or use **Build Now**.
 4. Results: build page → *Artifacts* (`reports/`), SonarQube :9000, Prometheus :9090/alerts, Grafana :3000.

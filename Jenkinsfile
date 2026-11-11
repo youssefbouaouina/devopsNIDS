@@ -12,7 +12,6 @@ pipeline {
         SONAR_HOST_URL = 'http://localhost:9000'
         // DevSecOps tooling runs in containers, so the VM needs nothing beyond Docker
         TRIVY_IMAGE = 'aquasec/trivy:0.65.0'
-        PYTHON_IMAGE = 'python:3.12'
         ZAP_IMAGE = 'ghcr.io/zaproxy/zaproxy:stable'
         APP_URL = 'http://192.168.56.10:8089'        // the deployed app, as seen from outside
         PROMETHEUS_URL = 'http://localhost:9090'
@@ -29,13 +28,13 @@ pipeline {
                 sh '''#!/bin/bash
                     set -euo pipefail
                     mkdir -p reports "$HOME/.cache/pre-commit"
+                    docker build -q -t devsecops/precommit security/precommit >/dev/null
                     docker run --rm -u "$(id -u):$(id -g)" \
                       -e HOME=/tmp -e PRE_COMMIT_HOME=/cache -e PRE_COMMIT_COLOR=never \
                       -v "$WORKSPACE":/src -v "$HOME/.cache/pre-commit":/cache -w /src \
-                      "$PYTHON_IMAGE" bash -c '
-                        pip install -q --user --no-warn-script-location pre-commit &&
+                      devsecops/precommit bash -c '
                         git config --global --add safe.directory /src &&
-                        ~/.local/bin/pre-commit run --all-files' \
+                        pre-commit run --all-files' \
                       2>&1 | tee reports/secrets-scan.txt
                 '''
             }
