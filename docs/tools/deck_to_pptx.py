@@ -31,6 +31,8 @@ BLOBS = {
     "023cf61b9c22acce924e89273509fb3c": shots / "13-grafana.jpg",
     "1c4a883f3c7064561fea4d81cc298f0c": repo / "lab1-evidence" / "cap1.PNG",
     "ff386e28803e45a880915f3757ad9086": shots / "05b-trivy-sca-summary.png",
+    "544742ff0f40e676c0c723e4531ec1de": shots / "11b-zap-summary.png",
+    "3caea1f2c010efe4a77199de36d04b2f": shots / "02b-jenkins-artifacts-list.png",
 }
 
 index = json.loads((deck / "project" / "deck.json").read_text(encoding="utf-8"))
