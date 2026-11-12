@@ -1,0 +1,421 @@
+=====================================================================
+ DEVSECOPS PROJECT - LIVE DEMO COMMAND SHEET
+ student-management - Labs: Cybersecurity and Coding (5NIDS6)
+ Youssef Bouaouina, Ayoub Braham
+=====================================================================
+
+ HOW TO READ THIS FILE
+   [WIN]  = run in PowerShell on Windows
+   [VM]   = run inside the VM (after "vagrant ssh")
+   [WEB]  = do it in the browser
+   Each tool has 3 parts:  A) run it live   B) add a new rule/test   C) apply it
+
+ URLS
+   Jenkins     http://192.168.56.10:8080/job/student-management/
+   SonarQube   http://192.168.56.10:9000
+   Prometheus  http://192.168.56.10:9090/alerts
+   Grafana     http://192.168.56.10:3000   (Dashboards > DevSecOps)
+   App         http://192.168.56.10:8089/student/swagger-ui.html
+   GitHub      https://github.com/youssefbouaouina/devopsNIDS  (branch devsecops/lab1-pre-commit)
+
+ IMPORTANT PATHS
+   Project on Windows : C:\Users\wessi\Documents\projects\devopsNIDS
+   Same folder in VM  : /vagrant              (shared, edits are live in both)
+   Jenkins workspace  : /var/lib/jenkins/workspace/student-management
+                        (last checkout + built jar; used to run tools by hand)
+
+
+=====================================================================
+ 0. START / CHECK THE LAB
+=====================================================================
+
+[WIN] cd C:\Users\wessi\Documents\projects\devopsNIDS\infra\vagrant
+[WIN] vagrant up
+[WIN] vagrant ssh
+
+[VM]  df -h /                          # MUST be under 90% (else SonarQube breaks)
+[VM]  docker image prune -f            # frees space if needed
+[VM]  docker ps --format '{{.Names}}'  # sonarqube, prometheus, grafana, minikube
+[VM]  kubectl -n devops get pods       # mysql + spring-app Running
+[VM]  systemctl is-active jenkins      # active
+
+ Trigger the pipeline (2 ways):
+   [WEB] Jenkins > student-management > Build Now
+   [WIN] any commit + push -> Jenkins polls GitHub every 2 min and starts by itself:
+         git commit --allow-empty -m "Demo: trigger pipeline"
+         git push
+
+
+=====================================================================
+ 1. LAB 1 - PRE-COMMIT SECURITY HOOKS          (Phase 1 - Development)
+    Config: .pre-commit-config.yaml   (+ repository.yaml needed by HMRC hooks)
+    Jenkins stage: "Secrets Scan (pre-commit)"
+=====================================================================
+
+ A) RUN IT LIVE
+[VM]  cd ~/lab1-precommit
+[VM]  pre-commit run --all-files                 # 3x Passed on the real code
+      (if "command not found": use ~/.local/bin/pre-commit)
+
+      -- show it blocks a secret --
+[VM]  touch fake.key.pem
+[VM]  echo "aws_secret_access_key = 1ye+VarkHMg7o6MNjwWIqOYICe03lfA+KPPAmeaY" > fake.aws.file
+[VM]  git add -A && git commit -m "test"         # -> Failed x2, commit refused
+[VM]  pre-commit run secrets_filecontent --all-files   # run one hook only
+[VM]  git reset -q && rm -f fake.key.pem fake.aws.file # CLEAN UP
+
+ B) ADD A NEW HOOK (example: detect private keys + large files)
+      Edit .pre-commit-config.yaml, add at the end (same indentation as "- repo:"):
+
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+    -   id: detect-private-key
+    -   id: check-added-large-files
+        args: ['--maxkb=500']
+
+ C) APPLY / TEST
+[VM]  pre-commit run --all-files                 # downloads the new hooks, runs all
+[VM]  printf -- '-----BEGIN RSA PRIVATE KEY-----\nabc\n' > id_rsa.txt
+[VM]  git add id_rsa.txt && git commit -m "test"  # detect-private-key -> Failed
+[VM]  git reset -q && rm -f id_rsa.txt
+      Then commit + push the config -> the Jenkins stage uses it automatically.
+
+ Q: "How do you exclude a file?"  -> top of .pre-commit-config.yaml:
+      exclude: '^(lab1-evidence|lab-instructions)/'
+
+
+=====================================================================
+ 2. TRIVY - SCA (Java libraries), IaC, CONTAINER IMAGE   (Phase 1)
+    Wrapper: security/trivy.sh   Accepted risks: .trivyignore
+    Jenkins stages: "SCA + IaC Scan (Trivy)", "Container Scan (Trivy)"
+=====================================================================
+
+ A) RUN IT LIVE  (as the jenkins user, inside the Jenkins workspace)
+    NOTE: target/ (the jar) exists only when no build is running "mvn clean".
+          If you get "lstat target: no such file", wait for the build to pass
+          the Package stage, or run the IMAGE scan below (always works).
+[VM]  sudo -iu jenkins
+[VM]  cd /var/lib/jenkins/workspace/student-management && export WORKSPACE=$PWD
+
+      # SCA: vulnerabilities in every library inside the jar
+[VM]  bash security/trivy.sh rootfs --scanners vuln target/
+      # IaC: misconfigurations in Dockerfile + Kubernetes manifests
+[VM]  bash security/trivy.sh config --skip-dirs lab1-evidence,lab-instructions,reports .
+      # Image: OS packages + libraries in the built image
+[VM]  bash security/trivy.sh image --scanners vuln youssefbouaouina82/student-management:latest
+      # Only HIGH and CRITICAL
+[VM]  bash security/trivy.sh image --severity HIGH,CRITICAL youssefbouaouina82/student-management:latest
+[VM]  exit                                       # back to vagrant user
+
+ B) ADD A RULE
+   1. Accept a risk (vulnerability or IaC check) -> add a line to .trivyignore:
+        # why it is accepted + review date
+        CVE-2026-XXXXX exp:2027-01-31
+        AVD-DS-0026                     # IaC: "no HEALTHCHECK in Dockerfile" (k8s probes cover it)
+   2. Make the gate stricter (fail on HIGH too) -> Jenkinsfile, stage "SCA + IaC Scan":
+        --severity CRITICAL   ->   --severity HIGH,CRITICAL
+   3. Fix an IaC finding (example: MySQL without resource limits) -> k8s/mysql.yaml,
+      under the mysql container:
+            resources:
+              requests: { cpu: 250m, memory: 512Mi }
+              limits:   { cpu: "1",  memory: 1Gi }
+
+ C) APPLY / TEST
+[VM]  (re-run the matching command from A: the finding disappears)
+      commit + push -> next Jenkins build uses it.
+
+
+=====================================================================
+ 3. LAB 2 - RETIRE.JS (JavaScript libraries)      (Phase 1)
+    Script: security/retire.sh     Jenkins stage: "JS Dependency Scan (Retire.js)"
+=====================================================================
+
+ A) RUN IT LIVE
+[VM]  sudo -iu jenkins
+[VM]  cd /var/lib/jenkins/workspace/student-management && export WORKSPACE=$PWD
+[VM]  bash security/retire.sh                     # extracts the JS from the jar, scans it
+[VM]  echo "gate exit code: $?"                   # 0 = OK, 13 = HIGH/CRITICAL found
+[VM]  cat reports/retire-report.txt
+[VM]  exit
+
+      Show what WAS found before the fix (old Swagger UI 4.18.2 / DOMPurify 3.0.1):
+      docs/evidence + slide "Vulnerable components" + pom.xml comment.
+
+ B) CHANGE THE RULE (gate also on MEDIUM)
+      security/retire.sh, last python line:
+        sys.exit(13 if counts.get("high", 0) + counts.get("critical", 0) else 0)
+      ->
+        sys.exit(13 if counts.get("medium", 0) + counts.get("high", 0) + counts.get("critical", 0) else 0)
+
+ C) Re-run A. Commit + push.
+
+ Q: "Why Retire.js on a Java app?" -> Swagger UI is JavaScript bundled inside the jar;
+    Retire.js found a HIGH XSS (CVE-2024-47875) that Trivy missed.
+
+
+=====================================================================
+ 4. SONARQUBE - SAST + QUALITY GATE              (Phase 1)
+    Jenkins stage: "SonarQube Analysis (SAST)"  (-Dsonar.qualitygate.wait=true)
+=====================================================================
+
+ A) SHOW IT
+[WEB] SonarQube > Projects > student-management > Quality Gate "Passed"
+[WEB] Issues tab (filter Software quality = Security) ; Security Hotspots tab
+
+ B) ADD A NEW QUALITY GATE RULE
+[WEB] Quality Gates > Create > name "DevSecOps"
+[WEB] Add Condition > On Overall Code > "Security Rating" is worse than "A"
+[WEB] Add Condition > On Overall Code > "Vulnerabilities" is greater than 0
+[WEB] Projects tab of the gate > select student-management  (or "Set as Default")
+
+ C) APPLY: Jenkins > Build Now. If the gate fails, the stage fails and the
+    pipeline stops before building the image. Console shows:
+    "QUALITY GATE STATUS: FAILED"
+
+
+=====================================================================
+ 5. LAB 3 - GAUNTLT (security acceptance tests)   (Phase 2 - Acceptance)
+    Files: security/gauntlt/nmap.attack, http.attack, Dockerfile
+    Jenkins stage: "Security Acceptance Tests (Gauntlt)"
+=====================================================================
+
+ A) RUN IT LIVE
+[VM]  cd /vagrant/security/gauntlt
+[VM]  docker run --rm --network host -v $PWD:/attacks devsecops/gauntlt               # all
+[VM]  docker run --rm --network host -v $PWD:/attacks devsecops/gauntlt nmap.attack   # one file
+[VM]  docker run --rm devsecops/gauntlt --list        # available attack adapters
+[VM]  docker run --rm devsecops/gauntlt --steps       # available steps (syntax)
+[VM]  cat http.attack                                 # show it is readable English
+
+ B) ADD A NEW SCENARIO  -> add at the end of security/gauntlt/http.attack
+    (2 spaces before "Scenario", 4 before "When/Then", 6 before the """ block)
+
+  Scenario: The beans actuator endpoint (internal wiring) is not exposed
+    When I launch a "curl" attack with:
+      """
+      curl -s -o /dev/null -w "code=%{http_code}" <base_url>/student/actuator/beans
+      """
+    Then the output should contain "code=404"
+
+    Another one (Swagger UI page must send the anti-clickjacking header):
+
+  Scenario: Swagger UI cannot be framed (clickjacking)
+    When I launch a "curl" attack with:
+      """
+      curl -s -D - -o /dev/null <base_url>/student/swagger-ui/index.html
+      """
+    Then the output should contain "X-Frame-Options: DENY"
+
+    A new nmap check (SSH must be the only admin port open, no Jenkins agent port):
+    add to nmap.attack:
+
+  Scenario: The Jenkins agent port 50000 is not exposed
+    When I launch an "nmap" attack with:
+      """
+      nmap -Pn -p 50000 <hostname>
+      """
+    Then the output should not match /50000.tcp\s+open/
+
+ C) APPLY: re-run A -> "X scenarios (X passed)". Commit + push.
+    Syntax notes: regex cannot contain "/" (write 8089.tcp, not 8089\/tcp).
+
+
+=====================================================================
+ 6. OWASP ZAP - SECURITY SMOKE TEST                (Phase 3 - Production)
+    Jenkins stage: "Security Smoke Test (OWASP ZAP)"
+=====================================================================
+
+ A) RUN IT LIVE (about 2-3 minutes)
+[VM]  mkdir -p /tmp/zap && chmod 777 /tmp/zap
+[VM]  docker run --rm --network host -v /tmp/zap:/zap/wrk ghcr.io/zaproxy/zaproxy:stable \
+        zap-baseline.py -t http://192.168.56.10:8089/student/swagger-ui/index.html -m 1 -I \
+        -r zap.html -J zap.json
+[VM]  ls /tmp/zap                    # zap.html, zap.json
+      Summary line at the end:  FAIL-NEW: 0  WARN-NEW: 6  PASS: 62
+
+ B) ADD A RULE (change how an alert is treated)
+   1. Generate the rules file (all rules with their default level):
+[VM]  docker run --rm --network host -v /tmp/zap:/zap/wrk ghcr.io/zaproxy/zaproxy:stable \
+        zap-baseline.py -t http://192.168.56.10:8089/student/swagger-ui/index.html -m 1 -g zap-rules.conf
+   2. Edit /tmp/zap/zap-rules.conf (tab separated: id  LEVEL  name). Examples:
+        10020   FAIL   Anti-clickjacking Header        # missing header now FAILS the scan
+        10021   FAIL   X-Content-Type-Options Missing
+        10096   IGNORE Timestamp Disclosure - Unix    # known false positive
+   3. Use it:  add  -c zap-rules.conf  to the zap-baseline.py command
+      (in the Jenkinsfile: copy the file into the repo, e.g. security/zap-rules.conf,
+       mount it to /zap/wrk and add "-c zap-rules.conf")
+
+ C) APPLY: re-run with -c ; FAIL-level alerts -> Jenkins stage UNSTABLE.
+    The headers are set in the app: src/main/java/.../config/SecurityHeadersFilter.java
+
+
+=====================================================================
+ 7. SECRETS MANAGEMENT                              (Phase 3 - Production)
+=====================================================================
+
+ A) SHOW IT
+[WEB] Jenkins > Manage Jenkins > Credentials : dockerhub-credentials, sonar-token,
+      mysql-root-password  (values never displayed)
+[WEB] Build > Console Output > Ctrl+F "docker login"  -> token masked as ****
+[VM]  kubectl -n devops get secret mysql-secret                   # exists (Opaque)
+[VM]  kubectl -n devops get deploy spring-app -o yaml | grep -A4 secretKeyRef
+[WIN] Jenkinsfile: search "withCredentials"
+
+ B) ADD A NEW SECRET (example: an API key used by the app)
+[WEB] Jenkins > Credentials > System > Global > Add Credentials
+        Kind: Secret text   ID: app-api-key   Secret: (value)
+      Jenkinsfile, in the "Kubernetes Deploy" stage:
+        withCredentials([string(credentialsId: 'app-api-key', variable: 'APP_API_KEY')]) {
+            sh '''kubectl -n devops create secret generic app-secret \
+                    --from-literal=api-key="$APP_API_KEY" --dry-run=client -o yaml | kubectl apply -f -'''
+        }
+      k8s/spring-app.yaml, under env:
+            - name: APP_API_KEY
+              valueFrom:
+                secretKeyRef: { name: app-secret, key: api-key }
+
+ C) Commit + push. Never put the value in Git (the Lab 1 hook would block it).
+
+
+=====================================================================
+ 8. CONTAINER / KUBERNETES HARDENING - proof on the running pod
+=====================================================================
+
+[VM]  kubectl -n devops exec deploy/spring-app -- id
+        -> uid=10001(app) gid=10001(app)            (not root)
+[VM]  kubectl -n devops exec deploy/spring-app -- touch /test
+        -> "Read-only file system"                  (readOnlyRootFilesystem)
+[VM]  kubectl -n devops get pod -l app=spring-app -o jsonpath='{.items[0].spec.containers[0].securityContext}'; echo
+[VM]  kubectl -n devops get pod -l app=spring-app -o jsonpath='{.items[0].spec.containers[0].resources}'; echo
+
+ Config: Dockerfile (USER 10001, JRE image) ; k8s/spring-app.yaml (securityContext, resources)
+
+
+=====================================================================
+ 9. PROMETHEUS SECURITY ALERTS + GRAFANA          (Phase 4 - Operations)
+    Rules: infra/monitoring/alert-rules.yml  (VM: /vagrant/infra/monitoring/)
+    Dashboard: infra/monitoring/grafana/dashboards/devsecops-security.json
+    Jenkins stage: "Continuous Monitoring Check" (security/monitoring_check.py)
+=====================================================================
+
+ A) SHOW + SIMULATE AN ATTACK
+[WEB] Prometheus > Alerts : 4 rules (StudentAppDown, SuspiciousClientErrorRate,
+      ServerErrorRate, HeapExhaustion)
+[WIN] 1..300 | % { try { Invoke-WebRequest "http://192.168.56.10:8089/student/admin/login?try=$_" -UseBasicParsing -TimeoutSec 2 | Out-Null } catch {} ; Start-Sleep -Milliseconds 150 }
+   or
+[VM]  for i in $(seq 1 300); do curl -s -o /dev/null "http://192.168.56.10:8089/student/admin/login?try=$i"; sleep 0.15; done
+      After 30-60 s:
+[WEB] Prometheus > Alerts > SuspiciousClientErrorRate = FIRING
+[WEB] Grafana > DevSecOps Security Monitoring > 4xx panel red, 404 spike
+[VM]  python3 /vagrant/security/monitoring_check.py http://localhost:9090   # text summary
+
+      Show "app down" alert (optional, ~1-2 min):
+[VM]  kubectl -n devops scale deploy/spring-app --replicas=0      # StudentAppDown FIRING
+[VM]  kubectl -n devops scale deploy/spring-app --replicas=1      # RESTORE IT!
+
+ B) ADD A NEW ALERT RULE -> append to infra/monitoring/alert-rules.yml
+    (same indentation as the other "- alert:" blocks, 6 spaces)
+
+      - alert: HighRequestRate
+        # possible scraping / DoS: more than 5 requests per second
+        expr: sum(rate(http_server_requests_seconds_count{job="student-management"}[1m])) > 5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Unusually high request rate on student-management (possible DoS)"
+
+      - alert: ActuatorProbing
+        # someone requesting actuator endpoints that are not exposed
+        expr: sum(rate(http_server_requests_seconds_count{job="student-management",status="404",uri=~".*actuator.*"}[5m])) > 0
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Requests to hidden actuator endpoints (reconnaissance)"
+
+ C) VALIDATE + LOAD
+[VM]  docker exec prometheus promtool check rules /etc/prometheus/alert-rules.yml
+        -> "SUCCESS: N rules found"
+[VM]  docker restart prometheus
+[WEB] Prometheus > Alerts : the new rule is listed
+
+ GRAFANA - add a panel live
+[WEB] Dashboards > DevSecOps > (dashboard) > Edit > Add > Visualization
+      Data source: Prometheus
+      Query: sum by (uri) (rate(http_server_requests_seconds_count{job="student-management"}[1m]))
+      Title: "Requests per URI" > Back to dashboard > Save (Save as copy if asked:
+      the original is provisioned from the repo; to change it permanently, edit
+      devsecops-security.json and run on the VM:
+[VM]  docker restart grafana
+
+
+=====================================================================
+ 10. ADD A NEW TOOL / STAGE TO THE PIPELINE (live example)
+     Example: Hadolint (Dockerfile linter) - small image, runs in seconds
+=====================================================================
+
+ A) TRY IT FIRST
+[VM]  cd /vagrant && docker run --rm -i hadolint/hadolint < Dockerfile
+
+ B) ADD THE STAGE -> Jenkinsfile, right after stage('SCA + IaC Scan (Trivy)') { ... }
+
+        stage('Dockerfile Lint (Hadolint)') {
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    sh '''#!/bin/bash
+                        set -o pipefail
+                        mkdir -p reports
+                        docker run --rm -i hadolint/hadolint < Dockerfile | tee reports/hadolint-report.txt
+                    '''
+                }
+            }
+        }
+
+ C) APPLY
+[WIN] git add Jenkinsfile && git commit -m "Add Hadolint stage" && git push
+      Jenkins starts in <= 2 min ; new stage appears ; report in Build Artifacts
+      (reports/** is archived automatically by the post { always { ... } } block)
+
+
+=====================================================================
+ 11. WHERE EVERYTHING IS (quick answers)
+=====================================================================
+
+ Jenkinsfile ............................ all stages, gates, archiving
+ .pre-commit-config.yaml, repository.yaml  Lab 1 hooks
+ security/trivy.sh, .trivyignore ......... Trivy wrapper + accepted risks
+ security/retire.sh ...................... Lab 2 Retire.js scan + gate
+ security/gauntlt/*.attack ............... Lab 3 Gauntlt scenarios
+ security/precommit/Dockerfile ........... image used by the Jenkins secrets scan
+ security/monitoring_check.py ............ Phase 4 Prometheus check
+ src/.../config/SecurityHeadersFilter.java  HTTP security headers (ZAP fix)
+ src/main/resources/application.properties  no error details, Swagger UI version
+ pom.xml ................................. patched library versions (SCA fixes)
+ Dockerfile .............................. JRE base image, non-root user
+ k8s/spring-app.yaml ..................... securityContext, limits, secretKeyRef
+ infra/monitoring/alert-rules.yml ........ Prometheus security alerts
+ infra/monitoring/grafana/dashboards/ .... Grafana dashboard
+ infra/jenkins/student-management-job.xml  Jenkins job (polls GitHub every 2 min)
+ docs/DEVSECOPS-REPORT.md / .docx ......... final report
+ docs/evidence/build-15/ ................. all reports of the reference build
+ docs/screenshots/ ....................... screenshots used in report and slides
+
+
+=====================================================================
+ 12. IF SOMETHING BREAKS
+=====================================================================
+
+ SonarQube stage fails "CE Task finished abnormally"
+   -> disk full:  [VM] df -h /   ; docker image prune -f ; docker restart sonarqube
+ Jenkins build "waiting for next available executor" forever
+   -> disk full (same fix), then restart Jenkins: [VM] sudo systemctl restart jenkins
+ App not reachable on :8089
+   -> [VM] kubectl -n devops get pods ; sudo systemctl restart spring-app-forward
+ Prometheus target DOWN
+   -> app not deployed yet, or forward down (same as above)
+ pre-commit: command not found
+   -> ~/.local/bin/pre-commit   (or: pipx ensurepath && source ~/.bashrc)
+ Anything else during the demo
+   -> show build #15 in Jenkins (all green) and docs/evidence/build-15/
