@@ -2,9 +2,10 @@
 # Developers: `pipx install pre-commit && pre-commit install` once per clone.
 # Jenkins runs the same hooks on every build (stage "Secrets Scan").
 #
-# Lab material and lab-1 evidence contain the deliberately fake AWS key used to
-# prove the hook blocks commits, so they are excluded from scanning.
-exclude: '^(lab1-evidence|lab-instructions)/'
+# Lab material, lab-1 evidence and the demo command sheet contain the deliberately
+# fake AWS key / private key used to prove the hook blocks commits, so they are
+# excluded from scanning.
+exclude: '^(lab1-evidence|lab-instructions)/|^docs/DEMO-COMMANDS\.txt$'
 
 repos:
 -   repo: https://github.com/hmrc/security-git-hooks

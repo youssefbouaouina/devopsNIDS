@@ -82,7 +82,9 @@
       Then commit + push the config -> the Jenkins stage uses it automatically.
 
  Q: "How do you exclude a file?"  -> top of .pre-commit-config.yaml:
-      exclude: '^(lab1-evidence|lab-instructions)/'
+      exclude: '^(lab1-evidence|lab-instructions)/|^docs/DEMO-COMMANDS\.txt$'
+      (Real story: build #23 FAILED because this very file contains the fake AWS key
+       used for the demo -> the Jenkins secrets scan caught it. We excluded the file.)
 
 
 =====================================================================
